@@ -37,6 +37,7 @@ const LawyerAppointmentsCompleted = () => {
       setshowNotification((toggle) => !toggle);
     }
   };
+  const lawyer = JSON.parse(localStorage.getItem("lawyer"));
 
   return (
     <div>

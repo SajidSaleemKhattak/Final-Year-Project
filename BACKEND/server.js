@@ -7,6 +7,8 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const emailRoutes = require("./routes/emailRoutes"); // Add this line
 require("dotenv").config();
 const socketIo = require("socket.io");
+const http = require("http");
+const setupChatSocket = require("./socket/chatSocket");
 const app = express();
 
 // Middleware
@@ -28,6 +30,23 @@ app.use("/api/lawyers", lawyerRoutes);
 app.use("/api/book", bookingRoutes);
 app.use("/api", emailRoutes); // Add this line for email routes
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Setup Socket.IO
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
+
+setupChatSocket(io);
+
+// Chat routes
+const chatRoutes = require("./routes/chatRoutes");
+app.use("/api/chat", chatRoutes);
+
 // Health Check Endpoint
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -48,12 +67,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(
-    `Server running on port ${PORT} in ${
-      process.env.NODE_ENV || "development"
-    } mode`
-  )
-);
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 module.exports = app;

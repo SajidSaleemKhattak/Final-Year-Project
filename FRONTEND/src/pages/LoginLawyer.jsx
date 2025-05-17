@@ -7,7 +7,8 @@ import axios from "axios";
 import logo from "../assets/home/logo.png";
 import tarazoImg from "../assets/login/tarazo.png";
 
-const Login = () => {
+const LoginLawyer = () => {
+  const role = "lawyer";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -19,10 +20,24 @@ const Login = () => {
         {
           email,
           password,
+          role,
         }
       );
+      // Store token and lawyer data in localStorage
       localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      
+      // Store lawyer details from response
+      const lawyerData = {
+        name: response.data.lawyer.name,
+        email: response.data.lawyer.email,
+        role: response.data.lawyer.role,
+        _id: response.data.lawyer._id,
+        bio: response.data.lawyer.bio,
+        tags: response.data.lawyer.tags,
+        totalCases: response.data.lawyer.totalCases
+      };
+      localStorage.setItem("lawyer", JSON.stringify(lawyerData));
+      
       console.log("Login response:", response.data);
 
       alert("Login successful");
@@ -117,4 +132,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default LoginLawyer;

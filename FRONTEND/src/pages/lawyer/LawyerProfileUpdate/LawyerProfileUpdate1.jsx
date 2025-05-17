@@ -4,7 +4,7 @@ import logo from "../../../assets/home/logo.png";
 import tarazoImg from "../../../assets/login/tarazo.png";
 import { FaFacebookF, FaTwitter } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
 const Lawyer_Signup = () => {
@@ -17,8 +17,11 @@ const Lawyer_Signup = () => {
     password: "",
     confirmPassword: "",
     bio: "",
+    totalCases: "",
   });
 
+  const [tags, setTags] = useState([]);
+  const [currentTag, setCurrentTag] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -33,6 +36,20 @@ const Lawyer_Signup = () => {
     }));
   };
 
+  const handleTagKeyPress = (e) => {
+    if (e.key === "Enter" && currentTag.trim()) {
+      e.preventDefault();
+      if (!tags.includes(currentTag.trim())) {
+        setTags([...tags, currentTag.trim()]);
+      }
+      setCurrentTag("");
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -42,17 +59,24 @@ const Lawyer_Signup = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/auth/signup", {
+      const dataToSend = {
         name: formData.name,
         email: formData.email,
         password: formData.password,
         bio: formData.bio,
         role: role,
-      });
+        tags: tags,
+        totalCases: formData.totalCases,
+      };
+
+      console.log("Data being sent to backend:", dataToSend);
+
+      await axios.post("http://localhost:5000/api/auth/signup", dataToSend);
 
       // Redirect to additional info step (or login)
-      navigate("/login");
+      navigate("/loginAs");
     } catch (err) {
+      console.error("Signup error:", err.response?.data || err);
       alert("Signup failed: " + (err.response?.data?.error || err.message));
     }
   };
@@ -153,6 +177,43 @@ const Lawyer_Signup = () => {
             className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-md"
             placeholder="Enter Your Professional Bio"
             rows="4"
+          />
+
+          {/* Tags Input Field */}
+          <div className="w-full max-w-md">
+            <input
+              type="text"
+              value={currentTag}
+              onChange={(e) => setCurrentTag(e.target.value)}
+              onKeyPress={handleTagKeyPress}
+              className="border border-gray-300 rounded-xl px-4 py-2 w-full"
+              placeholder="Enter tags (e.g., civil, family) and press Enter"
+            />
+            <div className="flex flex-wrap gap-2 mt-2">
+              {tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="bg-[#62B9CB] text-white px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                >
+                  {tag}
+                  <FaTimes
+                    className="cursor-pointer hover:text-red-200"
+                    onClick={() => removeTag(tag)}
+                  />
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Total Cases Field */}
+          <input
+            name="totalCases"
+            value={formData.totalCases}
+            onChange={handleChange}
+            className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-md"
+            type="number"
+            placeholder="Enter Total Cases Fought"
+            min="0"
           />
 
           <button

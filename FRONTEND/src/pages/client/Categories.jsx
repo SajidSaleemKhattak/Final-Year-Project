@@ -155,7 +155,7 @@ const Categories = () => {
                         />
                       ))}
                     </div>
-                    <Link to="/lawyer_check">
+                    <Link to="/lawyer_check" state={{ lawyer }}>
                       <button className="px-10 py-2 text-sm font-semibold bg-[#62B9CB] text-white rounded-lg">
                         Book Now
                       </button>

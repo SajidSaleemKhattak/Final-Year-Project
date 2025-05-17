@@ -67,7 +67,7 @@ const Signup = () => {
           <p className="text-sm mt-6">
             Already have an account?{" "}
             <Link
-              to="/login"
+              to="/loginAs"
               className="text-[#62B9CB] underline font-medium ml-1"
             >
               Login

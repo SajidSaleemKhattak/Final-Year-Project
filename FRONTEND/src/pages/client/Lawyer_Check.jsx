@@ -3,9 +3,18 @@ import logo from "../../assets/home/logo.png";
 import gear from "../../assets/Client/Gear.png";
 import Vector from "../../assets/Client/Vector.png";
 import pfp from "../../assets/Client/pfp.png";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import axios from "axios";
+import Chat from "../../components/Chat";
+import io from "socket.io-client";
+
 const Lawyer_Check = () => {
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Guest" };
+  const location = useLocation();
+  const { lawyer } = location.state || {};
+  const [showChat, setShowChat] = useState(false);
+  const socket = io("http://localhost:5000");
+
   const handleBookNow = async (lawyerId, userName, userEmail) => {
     try {
       await axios.post("http://localhost:5000/api/bookings", {
@@ -19,23 +28,13 @@ const Lawyer_Check = () => {
       alert("Booking failed. Please try again.");
     }
   };
+
+  const toggleChat = () => {
+    setShowChat(!showChat);
+  };
+
   let active = "home";
-  let cuurent_appointments = [
-    {
-      img: pfp,
-      name: "Danish",
-      type: "CivilCriminal",
-      Price: "4000",
-      Timing: "16:04",
-    },
-    {
-      img: pfp,
-      name: "Danish",
-      type: "CivilCriminal",
-      Price: "4000",
-      Timing: "16:04",
-    },
-  ];
+
   let reviews = [
     {
       img: pfp,
@@ -59,6 +58,7 @@ const Lawyer_Check = () => {
       Date: "16th April",
     },
   ];
+  console.log(lawyer, "from lawyer check");
   return (
     <div className="">
       {/* HEADER */}
@@ -138,79 +138,94 @@ const Lawyer_Check = () => {
         </div>
         {/* ACTION */}
         <div className="w-[80%] px-10 py-10">
-          <p className="text-2xl font-semibold">Profile</p>
+          <p className="text-2xl font-semibold">Lawyer Profile</p>
           <div className="flex mt-6 gap-2">
             <div className="flex flex-col border-1 border-neutral-200 rounded-xl w-4/10 px-3 py-4">
               <div className="flex flex-col gap-1 items-center justify-center">
                 <img className="w-21 h-21 rounded-[500px]" src={pfp} alt="" />
-                <p className="font-semibold text-xl">Sajid Saleem</p>
-                <p className="text-blue-300 text-[13px]">
-                  sajidsaleem707@gmail.com
+                <p className="font-semibold text-xl">
+                  {lawyer?.name || "Name Not Available"}
                 </p>
-                <p className="text-blue-300 text-[13px]">Number</p>
-                <p className="text-blue-300 text-[13px]">Location</p>
+                <p className="text-blue-300 text-[13px]">
+                  {lawyer?.email || "Email Not Available"}
+                </p>
+                <p className="text-blue-300 text-[13px]">
+                  {lawyer?.phone || "Phone Not Available"}
+                </p>
+                <p className="text-blue-300 text-[13px]">
+                  {lawyer?.location || "Location Not Available"}
+                </p>
               </div>
               <div>
                 <p className="bg-blue-400 text-white px-2 py-2 rounded-xs font-semibold text-center">
                   Areas of Practice
                 </p>
-                <div className="flex items-center justify-center gap-4 mt-2">
-                  <p className="bg-blue-400 text-white  rounded-xl text-center">
-                    Family Matters
-                  </p>
-                  <p className="bg-blue-400 text-white  rounded-xl text-center">
-                    Family Matters
-                  </p>
-                  <p className="bg-blue-400 text-white rounded-xl text-center">
-                    Family Matters
-                  </p>
+                <div className="flex items-center justify-center gap-4 mt-2 flex-wrap">
+                  {lawyer?.tags ? (
+                    lawyer.tags.map((tag, index) => (
+                      <p
+                        key={index}
+                        className="bg-blue-400 text-white px-3 py-1 rounded-xl text-center"
+                      >
+                        {tag}
+                      </p>
+                    ))
+                  ) : (
+                    <p className="bg-blue-400 text-white px-3 py-1 rounded-xl text-center">
+                      No practice areas available
+                    </p>
+                  )}
                 </div>
               </div>
               <hr className="text-neutral-300 border-1 mt-4" />
               <p className="font-semibold text-xl mt-4">About</p>
-              <p className="text-neutral-600 ">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                Explicabo illo maxime incidunt dolorum cum voluptates, quia
-                dolor sint, eius harum hic, illum iste ea sapiente sit atque
-                officia temporibus ullam!
+              <p className="text-neutral-600">
+                {lawyer?.bio || "No description available for this lawyer."}
               </p>
             </div>
             <div className="flex flex-col w-fit border-1 border-neutral-200 rounded-2xl px-4 py-4">
               <div>
                 <p className="text-xl font-semibold">Biography</p>
-                <p className="text-[16px] text-neutral-500"></p>
+                <p className="text-[16px] text-neutral-500">
+                  {lawyer?.biography || "No biography available."}
+                </p>
               </div>
               <div>
                 <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4 mt-4">
                   <p className="text-xl font-semibold">Reviews</p>
-                  {reviews.map((element, index) => (
-                    <div
-                      className="flex flex-col  px-3 py-2 gap-1 "
-                      key={index}
-                    >
-                      <div className="flex gap-3 items-center">
-                        <img
-                          className="w-12 h-12 rounded-[500px]"
-                          src={element.img}
-                          alt="lawyers Pfp"
-                          srcset=""
-                        />
-                        <p className="font-semibold">{element.name}</p>
-                      </div>
-                      <div className=" flex gap-3 items-center">
-                        <p className="text-[13px] font-semibold text-blue-300">
-                          Rating: {element.rating}
-                        </p>
+                  {lawyer?.reviews ? (
+                    lawyer.reviews.map((review, index) => (
+                      <div
+                        className="flex flex-col px-3 py-2 gap-1"
+                        key={index}
+                      >
+                        <div className="flex gap-3 items-center">
+                          <img
+                            className="w-12 h-12 rounded-[500px]"
+                            src={review.img || pfp}
+                            alt="Reviewer's profile"
+                          />
+                          <p className="font-semibold">{review.name}</p>
+                        </div>
+                        <div className="flex gap-3 items-center">
+                          <p className="text-[13px] font-semibold text-blue-300">
+                            Rating: {review.rating}
+                          </p>
+                          <p className="text-[13px] text-neutral-500">
+                            {review.date}
+                          </p>
+                        </div>
                         <p className="text-[13px] text-neutral-500">
-                          {element.Date}
+                          {review.message}
                         </p>
+                        <hr className="mt-1 border-neutral-200" />
                       </div>
-                      <p className="text-[13px] text-neutral-500">
-                        {element.message}
-                      </p>
-                      <hr className="mt-1 border-neutral-200" />
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-neutral-500 text-center py-4">
+                      No reviews available yet.
+                    </p>
+                  )}
                 </div>
                 <div className="flex justify-end gap-5 mt-5">
                   <Link to="/categories">
@@ -218,8 +233,14 @@ const Lawyer_Check = () => {
                       Back
                     </button>
                   </Link>
+                  <button
+                    onClick={toggleChat}
+                    className="bg-blue-400 text-white px-8 py-2 rounded-xl hover:bg-blue-500 transition-colors"
+                  >
+                    Chat
+                  </button>
                   <Link to="/Contact">
-                    <button className="bg-[#62B9CB] text-white px-4 py-2 rounded-xl">
+                    <button className="bg-[#62B9CB] text-white px-8 py-2 rounded-xl">
                       Book Now
                     </button>
                   </Link>
@@ -229,6 +250,16 @@ const Lawyer_Check = () => {
           </div>
         </div>
       </div>
+
+      {/* Chat Component */}
+      {showChat && (
+        <Chat
+          lawyer={lawyer}
+          user={user}
+          onClose={toggleChat}
+          socket={socket}
+        />
+      )}
     </div>
   );
 };

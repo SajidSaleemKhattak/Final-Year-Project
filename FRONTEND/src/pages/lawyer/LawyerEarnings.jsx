@@ -12,7 +12,7 @@ import { useState } from "react";
 
 const LawyerEarnings = () => {
   let [showNotification, setshowNotification] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const lawyer = JSON.parse(localStorage.getItem("lawyer"));
 
   const handleNotification = () => {
     {
@@ -111,7 +111,7 @@ const LawyerEarnings = () => {
             <img src={gear} className="w-5 h-5" alt="" />
             <div className="flex justify-between gap-1.5">
               <img src={pfp} className="w-7 h-7 rounded-4xl" alt="" />
-              <p className="text-neutral-600 font-semibold">{user.name}</p>
+              <p className="text-neutral-600 font-semibold">{lawyer.name}</p>
             </div>
           </div>
         </div>

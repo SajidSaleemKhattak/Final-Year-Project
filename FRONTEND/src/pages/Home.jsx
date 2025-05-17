@@ -54,7 +54,7 @@ const Home = () => {
               Sign up
             </button>
           </Link>
-          <Link to="/login">
+          <Link to="/loginAs">
             <button className="px-6 py-1.5 bg-[#62B9CB] text-white rounded-3xl text-sm">
               Login
             </button>

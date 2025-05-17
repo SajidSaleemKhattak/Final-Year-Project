@@ -1,6 +1,6 @@
 import React from "react";
 import Home from "./pages/Home";
-import Login from "./pages/Login";
+import LoginClient from "./pages/LoginClient";
 import Signup from "./pages/Signup";
 import Client_Signup from "./pages/client/Client_Signup";
 import Categories from "./pages/client/Categories";
@@ -28,12 +28,22 @@ import LawyerAppointmentsCompleted from "./pages/lawyer/LawyerAppointments/Lawye
 import AppointmentsCompleted from "./pages/client/AppointmentsCompleted";
 import AppointmentsActive from "./pages/client/Appointments";
 import Contact from "./pages/client/Contact";
+import LoginAs from "./pages/LoginAs";
+import LoginLawyer from "./pages/LoginLawyer";
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Home></Home>}></Route>
-        <Route path="/login" element={<Login></Login>}></Route>
+        <Route
+          path="/loginClient"
+          element={<LoginClient></LoginClient>}
+        ></Route>
+        <Route path="/loginAs" element={<LoginAs></LoginAs>}></Route>
+        <Route
+          path="/loginLawyer"
+          element={<LoginLawyer></LoginLawyer>}
+        ></Route>
         <Route path="/signup" element={<Signup></Signup>}></Route>
         <Route
           path="/client_signup"

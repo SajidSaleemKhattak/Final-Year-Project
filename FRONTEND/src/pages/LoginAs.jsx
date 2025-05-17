@@ -1,0 +1,90 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import logo from "../assets/home/logo.png";
+import tarazoImg from "../assets/login/tarazo.png";
+import { CgProfile } from "react-icons/cg";
+import balance from "../assets/balance.png";
+
+const LoginAs = () => {
+  return (
+    <div className="grid grid-cols-2 min-h-screen relative bg-white">
+      {/* Left Section */}
+      <div className="px-16 py-10 flex flex-col justify-start">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row gap-8 justify-center md:gap-2 md:justify-between items-center w-screen md:w-full mb-8">
+          <img src={logo} className="w-[219px] h-[57px]" alt="Logo" />
+          <Link to="/">
+            <button className="px-6 py-2 bg-[#62B9CB] rounded-3xl text-white font-medium">
+              Back to Website
+            </button>
+          </Link>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex flex-col items-center justify-center gap-6 flex-grow w-screen md:w-full">
+          <p className="text-2xl font-semibold text-[#62B9CB] text-center">
+            How would you like to login?
+          </p>
+          <p className="text-sm text-gray-600 text-center">
+            Please select your account type to continue
+          </p>
+
+          {/* Card Options */}
+          <div className="flex flex-col md:flex-row gap-10 mt-4">
+            {/* Client Card */}
+            <Link to="/loginClient">
+              <div className="w-[200px] h-[220px] border border-neutral-200 rounded-2xl px-6 py-4 flex flex-col items-center justify-center shadow hover:shadow-md transition-all">
+                <div className="text-[#62B9CB]">
+                  <CgProfile size={40} />
+                </div>
+                <p className="font-semibold text-[#62B9CB] mt-4">
+                  Client Login
+                </p>
+                <p className="text-xs text-center text-[gray-500] mt-1">
+                  Access your client account to manage your legal needs
+                </p>
+              </div>
+            </Link>
+
+            {/* Lawyer Card */}
+            <Link to="/loginLawyer">
+              <div className="w-[200px] h-[220px] border border-neutral-200 rounded-2xl px-6 py-4 flex flex-col items-center justify-center shadow hover:shadow-md transition-all">
+                <div className="text-[#62B9CB]">
+                  <img src={balance} alt="" className="w-10" />
+                </div>
+                <p className="font-semibold text-[#62B9CB] mt-4">
+                  Lawyer Login
+                </p>
+                <p className="text-xs text-center text-gray-500 mt-1">
+                  Access your lawyer account to manage your services
+                </p>
+              </div>
+            </Link>
+          </div>
+
+          {/* Signup Redirect */}
+          <p className="text-sm mt-6">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="text-[#62B9CB] underline font-medium ml-1"
+            >
+              Sign up
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Right Section with Image */}
+      <div className="relative hidden md:block">
+        <img
+          src={tarazoImg}
+          className="absolute top-0 right-0 h-full w-full object-cover"
+          alt="Background"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default LoginAs;

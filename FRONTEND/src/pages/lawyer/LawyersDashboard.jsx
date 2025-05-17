@@ -18,7 +18,7 @@ import LSideBar from "./components/L-sidebar.jsx";
 
 const LawyersDashboard = () => {
   let [showNotification, setshowNotification] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const lawyer = JSON.parse(localStorage.getItem("lawyer"));
 
   const handleNotification = () => {
     {
@@ -117,7 +117,7 @@ const LawyersDashboard = () => {
             <img src={gear} className="w-5 h-5" alt="" />
             <div className="flex justify-between gap-1.5">
               <img src={pfp} className="w-7 h-7 rounded-4xl" alt="" />
-              <p className="text-neutral-600 font-semibold">{user.name}</p>
+              <p className="text-neutral-600 font-semibold">{lawyer.name}</p>
             </div>
           </div>
         </div>
@@ -132,7 +132,9 @@ const LawyersDashboard = () => {
           <div className="px-4 py-3 w-full">
             {" "}
             {/* Main Content */}
-            <p className="text-2xl font-bold mb-5">Welcome Back, {user.name}</p>
+            <p className="text-2xl font-bold mb-5">
+              Welcome Back, {lawyer.name}
+            </p>
             <div
               className="w-full h-[200px] bg-cover bg-center relative my-5 mx-auto rounded-md px-5 flex items-center text-white bg-blend-darken"
               style={{
@@ -189,15 +191,10 @@ const LawyersDashboard = () => {
               </div>
               <div className="flex flex-col w-2/4  text-black bg-gray-100 rounded-xl p-5">
                 <div className="flex items-center gap-4">
-                  <div className="text-md font-semibold">Update</div>
+                  <div className="text-md font-semibold">Bio</div>
                 </div>
                 <div className="mt-4 flex justify-between flex-col items-start gap-4">
-                  <p className="text-sm">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Inventore tempore aperiam illum facilis repellendus ut
-                    quibusdam necessitatibus, sapiente esse quasi. Ea quae
-                    provident quam illum nesciunt culpa tenetur cum eum.
-                  </p>
+                  <p className="text-sm">{lawyer.bio}</p>
                 </div>
               </div>
             </div>
