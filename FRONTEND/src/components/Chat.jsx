@@ -32,19 +32,23 @@ const Chat = ({ lawyer, user, onClose }) => {
     const loadChatHistory = async () => {
       try {
         const response = await axios.get(
-          `/api/chat/history/${user._id}/${lawyer._id}`,
+          `http://localhost:5000/api/chat/history/${user._id}/${lawyer._id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           }
         );
-        setMessages(response.data);
-        if (response.data.length > 0) {
-          setChatId(response.data[0].chatId);
+        setMessages(response.data.messages || []);
+        setChatId(response.data._id);
+
+        // Join the chat room
+        if (response.data._id) {
+          socketRef.current.emit("join_chat", response.data._id);
         }
       } catch (error) {
         console.error("Error loading chat history:", error);
+        setMessages([]);
       }
     };
 
@@ -52,14 +56,17 @@ const Chat = ({ lawyer, user, onClose }) => {
 
     // Socket event listeners
     socketRef.current.on("receive_message", (data) => {
-      setMessages((prev) => [...prev, data.message]);
+      setMessages((prev) => [...prev, data]);
     });
 
-    socketRef.current.on("user_typing", ({ userId, isTyping }) => {
-      if (userId === lawyer._id) {
-        setIsTyping(isTyping);
+    socketRef.current.on(
+      "user_typing",
+      ({ chatId: receivedChatId, userId, isTyping }) => {
+        if (chatId === receivedChatId && userId === lawyer._id) {
+          setIsTyping(isTyping);
+        }
       }
-    });
+    );
 
     return () => {
       socketRef.current.disconnect();
@@ -71,20 +78,28 @@ const Chat = ({ lawyer, user, onClose }) => {
   }, [messages]);
 
   const handleTyping = () => {
-    socketRef.current.emit("typing_start", { chatId, userId: user._id });
+    if (chatId) {
+      socketRef.current.emit("typing_start", {
+        chatId,
+        userId: user._id,
+      });
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        socketRef.current.emit("typing_end", {
+          chatId,
+          userId: user._id,
+        });
+      }, 1000);
     }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      socketRef.current.emit("typing_end", { chatId, userId: user._id });
-    }, 1000);
   };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (newMessage.trim()) {
+    if (newMessage.trim() && chatId) {
       const messageData = {
         chatId,
         senderId: user._id,
@@ -92,19 +107,43 @@ const Chat = ({ lawyer, user, onClose }) => {
         receiverId: lawyer._id,
         receiverType: "Lawyer",
         message: newMessage,
+        timestamp: new Date(),
       };
 
       try {
+        // Add message to local state immediately
+        setMessages((prev) => [...prev, messageData]);
+
+        // Send message through socket
         socketRef.current.emit("send_message", messageData);
+
+        // Clear input
         setNewMessage("");
 
         // Clear typing timeout
         if (typingTimeoutRef.current) {
           clearTimeout(typingTimeoutRef.current);
-          socketRef.current.emit("typing_end", { chatId, userId: user._id });
+          socketRef.current.emit("typing_end", {
+            chatId,
+            userId: user._id,
+          });
         }
+
+        // Send message to backend to persist
+        await axios.post(
+          `http://localhost:5000/api/chat/message`,
+          messageData,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
       } catch (error) {
         console.error("Error sending message:", error);
+        // Remove message from local state if sending failed
+        setMessages((prev) => prev.filter((msg) => msg !== messageData));
+        alert("Failed to send message. Please try again.");
       }
     }
   };
@@ -115,7 +154,7 @@ const Chat = ({ lawyer, user, onClose }) => {
       <div className="flex items-center justify-between p-4 border-b-1 border-neutral-200">
         <div className="flex items-center gap-3">
           <img
-            src={lawyer.img || pfp}
+            src={lawyer.profilePicture || pfp}
             alt={lawyer.name}
             className="w-10 h-10 rounded-full"
           />
@@ -144,8 +183,8 @@ const Chat = ({ lawyer, user, onClose }) => {
             <div
               className={`max-w-[70%] rounded-2xl p-3 ${
                 message.senderId === user._id
-                  ? "bg-blue-400 text-white"
-                  : "bg-neutral-100"
+                  ? "bg-[#62B9CB] text-white"
+                  : "bg-gray-100"
               }`}
             >
               <p className="text-sm">{message.message}</p>
@@ -176,12 +215,17 @@ const Chat = ({ lawyer, user, onClose }) => {
               setNewMessage(e.target.value);
               handleTyping();
             }}
+            onKeyPress={(e) => {
+              if (e.key === "Enter") {
+                handleSendMessage(e);
+              }
+            }}
             placeholder="Type your message..."
-            className="flex-1 border-1 border-neutral-200 rounded-xl px-4 py-2 focus:outline-none focus:border-blue-400"
+            className="flex-1 border-1 border-neutral-200 rounded-xl px-4 py-2 focus:outline-none focus:border-[#62B9CB]"
           />
           <button
             type="submit"
-            className="bg-blue-400 text-white px-4 py-2 rounded-xl hover:bg-blue-500 transition-colors"
+            className="bg-[#62B9CB] text-white px-4 py-2 rounded-xl hover:bg-[#51a4b7] transition-colors"
           >
             Send
           </button>

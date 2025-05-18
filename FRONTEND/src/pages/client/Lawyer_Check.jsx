@@ -12,6 +12,7 @@ const Lawyer_Check = () => {
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Guest" };
   const location = useLocation();
   const { lawyer } = location.state || {};
+  console.log("Received lawyer data:", lawyer);
   const [showChat, setShowChat] = useState(false);
   const socket = io("http://localhost:5000");
 
@@ -161,15 +162,18 @@ const Lawyer_Check = () => {
                   Areas of Practice
                 </p>
                 <div className="flex items-center justify-center gap-4 mt-2 flex-wrap">
-                  {lawyer?.tags ? (
-                    lawyer.tags.map((tag, index) => (
-                      <p
-                        key={index}
-                        className="bg-blue-400 text-white px-3 py-1 rounded-xl text-center"
-                      >
-                        {tag}
-                      </p>
-                    ))
+                  {lawyer?.areasOfPractice?.length > 0 ||
+                  lawyer?.tags?.length > 0 ? (
+                    (lawyer?.areasOfPractice || lawyer?.tags || []).map(
+                      (tag, index) => (
+                        <p
+                          key={index}
+                          className="bg-blue-400 text-white px-3 py-1 rounded-xl text-center"
+                        >
+                          {tag}
+                        </p>
+                      )
+                    )
                   ) : (
                     <p className="bg-blue-400 text-white px-3 py-1 rounded-xl text-center">
                       No practice areas available
@@ -239,11 +243,14 @@ const Lawyer_Check = () => {
                   >
                     Chat
                   </button>
-                  <Link to="/Contact">
-                    <button className="bg-[#62B9CB] text-white px-8 py-2 rounded-xl">
-                      Book Now
-                    </button>
-                  </Link>
+                  <button
+                    onClick={() =>
+                      handleBookNow(lawyer._id, user.name, user.email)
+                    }
+                    className="bg-[#62B9CB] text-white px-8 py-2 rounded-xl"
+                  >
+                    Book Now
+                  </button>
                 </div>
               </div>
             </div>

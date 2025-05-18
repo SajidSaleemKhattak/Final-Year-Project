@@ -23,7 +23,7 @@ exports.signup = async (req, res) => {
         password: hashedPassword,
         role,
         bio: req.body.bio || "",
-        tags: req.body.tags || [],
+        areasOfPractice: req.body.areasOfPractice || [],
         totalCases: 0,
       });
       if (role == "client") {
@@ -104,7 +104,7 @@ exports.login = async (req, res) => {
           role: lawyer.role,
           _id: lawyer._id,
           bio: lawyer.bio,
-          tags: lawyer.tags,
+          areasOfPractice: lawyer.areasOfPractice,
           totalCases: lawyer.totalCases,
         },
       });

@@ -65,13 +65,21 @@ const Lawyer_Signup = () => {
         password: formData.password,
         bio: formData.bio,
         role: role,
-        tags: tags,
+        areasOfPractice: tags,
         totalCases: formData.totalCases,
       };
 
+      // Debug logs
+      console.log("Form Data State:", formData);
+      console.log("Areas of Practice:", tags);
+      console.log("Bio value:", formData.bio);
       console.log("Data being sent to backend:", dataToSend);
 
-      await axios.post("http://localhost:5000/api/auth/signup", dataToSend);
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/signup",
+        dataToSend
+      );
+      console.log("Server Response:", response.data);
 
       // Redirect to additional info step (or login)
       navigate("/loginAs");

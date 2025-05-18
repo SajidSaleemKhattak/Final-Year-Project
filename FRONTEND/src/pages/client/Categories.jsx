@@ -26,6 +26,7 @@ const Categories = () => {
       try {
         const res = await axios.get("http://localhost:5000/api/lawyers");
         if (Array.isArray(res.data)) {
+          console.log("Fetched lawyers:", res.data);
           setLawyers(res.data);
         } else {
           console.error("Unexpected response:", res.data);

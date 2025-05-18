@@ -11,8 +11,31 @@ const http = require("http");
 const setupChatSocket = require("./socket/chatSocket");
 const app = express();
 
+// Create HTTP server
+const server = http.createServer(app);
+
+// Setup Socket.IO
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+// Make io available to our routes
+app.set("io", io);
+
+// Setup chat socket handlers
+setupChatSocket(io);
+
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // For form data
 
@@ -29,19 +52,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/lawyers", lawyerRoutes);
 app.use("/api/book", bookingRoutes);
 app.use("/api", emailRoutes); // Add this line for email routes
-
-// Create HTTP server
-const server = http.createServer(app);
-
-// Setup Socket.IO
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-  },
-});
-
-setupChatSocket(io);
 
 // Chat routes
 const chatRoutes = require("./routes/chatRoutes");
@@ -66,9 +76,10 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app;

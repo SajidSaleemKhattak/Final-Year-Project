@@ -2,8 +2,16 @@ const Chat = require("../models/Chat");
 const Message = require("../models/Message");
 
 const setupChatSocket = (io) => {
+  const connectedUsers = new Map();
+
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
+
+    // Handle user connection
+    socket.on("user_connected", ({ userId, userType }) => {
+      connectedUsers.set(userId, { socketId: socket.id, userType });
+      console.log(`${userType} connected:`, userId);
+    });
 
     // Join a chat room
     socket.on("join_chat", (chatId) => {
@@ -14,47 +22,85 @@ const setupChatSocket = (io) => {
     // Handle new message
     socket.on("send_message", async (messageData) => {
       try {
-        const { chatId, senderId, content } = messageData;
+        const {
+          chatId,
+          senderId,
+          senderType,
+          receiverId,
+          receiverType,
+          message,
+        } = messageData;
 
-        // Save message to database
-        const newMessage = new Message({
-          chat: chatId,
-          sender: senderId,
-          content: content,
-        });
-        await newMessage.save();
-
-        // Update last message in chat
-        await Chat.findByIdAndUpdate(chatId, {
-          lastMessage: newMessage._id,
+        // Find or create chat
+        let chat = await Chat.findOne({
+          participants: {
+            $all: [senderId, receiverId],
+          },
         });
 
-        // Broadcast message to all users in the chat room
-        io.to(chatId).emit("receive_message", {
-          _id: newMessage._id,
-          chat: chatId,
-          sender: senderId,
-          content: content,
-          createdAt: newMessage.createdAt,
+        if (!chat) {
+          chat = await Chat.create({
+            participants: [senderId, receiverId],
+            messages: [],
+          });
+        }
+
+        // Create new message
+        const newMessage = {
+          senderId,
+          senderType,
+          receiverId,
+          receiverType,
+          message,
+          timestamp: new Date(),
+          read: false,
+        };
+
+        // Add message to chat and update lastMessage
+        chat.messages.push(newMessage);
+        chat.lastMessage = newMessage;
+        await chat.save();
+
+        // Emit to all users in the chat
+        io.to(chatId || chat._id).emit("receive_message", {
+          ...newMessage,
+          chatId: chat._id,
         });
+
+        // If receiver is online, emit new_chat_message
+        const receiver = connectedUsers.get(receiverId);
+        if (receiver) {
+          io.to(receiver.socketId).emit("new_chat_message", {
+            chatId: chat._id,
+            message: newMessage,
+          });
+        }
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error("Error handling message:", error);
+        socket.emit("message_error", { error: "Failed to send message" });
       }
     });
 
     // Handle typing status
-    socket.on("typing", (data) => {
-      const { chatId, userId } = data;
-      socket.to(chatId).emit("user_typing", { chatId, userId });
+    socket.on("typing_start", ({ chatId, userId }) => {
+      socket.to(chatId).emit("user_typing", { chatId, userId, isTyping: true });
     });
 
-    socket.on("stop_typing", (data) => {
-      const { chatId, userId } = data;
-      socket.to(chatId).emit("user_stop_typing", { chatId, userId });
+    socket.on("typing_end", ({ chatId, userId }) => {
+      socket
+        .to(chatId)
+        .emit("user_typing", { chatId, userId, isTyping: false });
     });
 
     // Handle disconnect
     socket.on("disconnect", () => {
+      // Remove user from connected users
+      for (const [userId, data] of connectedUsers.entries()) {
+        if (data.socketId === socket.id) {
+          connectedUsers.delete(userId);
+          break;
+        }
+      }
       console.log("User disconnected:", socket.id);
     });
   });

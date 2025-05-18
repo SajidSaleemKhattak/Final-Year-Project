@@ -44,17 +44,14 @@ const chatSchema = new mongoose.Schema(
       },
     ],
     messages: [messageSchema],
-    lastMessage: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Message",
-    },
+    lastMessage: messageSchema,
   },
   { timestamps: true }
 );
 
 // Indexes for better query performance
 chatSchema.index({ "participants.userId": 1 });
-chatSchema.index({ lastMessage: -1 });
+chatSchema.index({ updatedAt: -1 });
 
 const Chat = mongoose.model("Chat", chatSchema);
 module.exports = Chat;
