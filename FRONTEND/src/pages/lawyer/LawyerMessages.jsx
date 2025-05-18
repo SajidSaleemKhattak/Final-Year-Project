@@ -57,20 +57,27 @@ const LawyerMessages = () => {
     loadChats();
 
     // Socket event listeners
-    socketRef.current.on("receive_message", (data) => {
+    const handleReceiveMessage = (data) => {
       if (selectedChat && data.chatId === selectedChat._id) {
-        setMessages((prev) => [...prev, data]);
+        setMessages((prev) => {
+          // Check if message already exists
+          const messageExists = prev.some(
+            (msg) =>
+              msg.senderId === data.senderId && msg.message === data.message
+          );
+          if (messageExists) return prev;
+          return [...prev, data];
+        });
       }
-      // Refresh chat list to update last message
-      loadChats();
-    });
-
-    socketRef.current.on("new_chat_message", (data) => {
       // Refresh chat list when new message arrives
       loadChats();
-    });
+    };
 
-    socketRef.current.on("user_typing", ({ chatId, userId, isTyping }) => {
+    const handleNewChatMessage = () => {
+      loadChats();
+    };
+
+    const handleTyping = ({ chatId, userId, isTyping }) => {
       if (
         selectedChat &&
         chatId === selectedChat._id &&
@@ -78,10 +85,19 @@ const LawyerMessages = () => {
       ) {
         setIsTyping(isTyping);
       }
-    });
+    };
+
+    socketRef.current.on("receive_message", handleReceiveMessage);
+    socketRef.current.on("new_chat_message", handleNewChatMessage);
+    socketRef.current.on("user_typing", handleTyping);
 
     return () => {
-      socketRef.current.disconnect();
+      if (socketRef.current) {
+        socketRef.current.off("receive_message", handleReceiveMessage);
+        socketRef.current.off("new_chat_message", handleNewChatMessage);
+        socketRef.current.off("user_typing", handleTyping);
+        socketRef.current.disconnect();
+      }
     };
   }, [lawyer._id, selectedChat]);
 
@@ -156,10 +172,10 @@ const LawyerMessages = () => {
           });
         }
 
-        // Send message through socket
+        // Only emit through socket, don't add to state manually
         socketRef.current.emit("send_message", messageData);
 
-        // Send message to backend to persist
+        // Persist to database
         await axios.post(
           `http://localhost:5000/api/chat/message`,
           messageData,

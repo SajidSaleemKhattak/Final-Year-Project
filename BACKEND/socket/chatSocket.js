@@ -19,6 +19,12 @@ const setupChatSocket = (io) => {
       console.log(`User ${socket.id} joined chat: ${chatId}`);
     });
 
+    // Leave a chat room
+    socket.on("leave_chat", (chatId) => {
+      socket.leave(chatId);
+      console.log(`User ${socket.id} left chat: ${chatId}`);
+    });
+
     // Handle new message
     socket.on("send_message", async (messageData) => {
       try {
@@ -61,15 +67,26 @@ const setupChatSocket = (io) => {
         chat.lastMessage = newMessage;
         await chat.save();
 
-        // Emit to all users in the chat
-        io.to(chatId || chat._id).emit("receive_message", {
+        // Emit only to the specific chat room
+        socket.to(chatId || chat._id).emit("receive_message", {
           ...newMessage,
           chatId: chat._id,
         });
 
-        // If receiver is online, emit new_chat_message
+        // Emit back to sender to confirm message sent
+        socket.emit("receive_message", {
+          ...newMessage,
+          chatId: chat._id,
+        });
+
+        // Notify receiver about new message only if they're not in the chat room
         const receiver = connectedUsers.get(receiverId);
-        if (receiver) {
+        if (
+          receiver &&
+          !io.sockets.adapter.rooms
+            .get(chatId || chat._id)
+            ?.has(receiver.socketId)
+        ) {
           io.to(receiver.socketId).emit("new_chat_message", {
             chatId: chat._id,
             message: newMessage,

@@ -203,15 +203,7 @@ const createMessage = async (req, res) => {
     chat.lastMessage = newMessage;
     await chat.save();
 
-    // Emit the message through socket.io
-    req.app
-      .get("io")
-      .to(chatId || chat._id)
-      .emit("receive_message", {
-        ...newMessage,
-        chatId: chat._id,
-      });
-
+    // Return the saved message without emitting socket event
     res.status(201).json(newMessage);
   } catch (error) {
     console.error("Error creating message:", error);
