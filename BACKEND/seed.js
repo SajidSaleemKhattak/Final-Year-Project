@@ -10,12 +10,18 @@ const users = [
     email: "ali.raza@example.com",
     password: "$2a$10$wJjd5J3Gcj7w8EfW3JVmM.X0Z1YdT8mQHl0jR0a5G2WxDbhr3Y9Dq", // client123
     role: "client",
+    phoneNumber: "+92 300 1234567",
+    location: "Lahore, Pakistan",
+    bio: "Looking for legal consultation regarding property matters.",
   },
   {
     name: "Fatima Khan",
     email: "fatima.khan@example.com",
     password: "$2a$10$4jNHr87lEAKnLRe2NU2/ieEKo8DdhPLNcV2M7Q/u1UKFknr4PPtkW", // client123
     role: "client",
+    phoneNumber: "+92 301 2345678",
+    location: "Karachi, Pakistan",
+    bio: "Need legal advice for family law matters.",
   },
   {
     name: "Adeel Hussain",

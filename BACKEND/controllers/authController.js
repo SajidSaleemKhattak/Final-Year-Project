@@ -9,10 +9,19 @@ const Lawyer = require("../models/Lawyer");
 exports.signup = async (req, res) => {
   console.log("Signup Hit");
   try {
-    const { name, email, password, role } = req.body;
-    if (role == "client") {
+    const { name, email, password, role, phoneNumber, location, bio } =
+      req.body;
+    if (role === "client") {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = new User({ name, email, password: hashedPassword, role });
+      const user = new User({
+        name,
+        email,
+        password: hashedPassword,
+        role,
+        phoneNumber,
+        location,
+        bio,
+      });
       await user.save();
       res.status(201).json({ message: "User created successfully" });
     } else {
@@ -26,13 +35,8 @@ exports.signup = async (req, res) => {
         areasOfPractice: req.body.areasOfPractice || [],
         totalCases: 0,
       });
-      if (role == "client") {
-        await user.save();
-        res.status(201).json({ message: "User created successfully" });
-      } else if (role == "lawyer") {
-        await lawyer.save();
-        res.status(201).json({ message: "Lawyer created successfully" });
-      }
+      await lawyer.save();
+      res.status(201).json({ message: "Lawyer created successfully" });
     }
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -41,7 +45,7 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { role } = req.body;
-  if (role == "client") {
+  if (role === "client") {
     try {
       const { email, password } = req.body;
       const user = await User.findOne({ email });
@@ -71,6 +75,10 @@ exports.login = async (req, res) => {
           email: user.email,
           role: user.role,
           _id: user._id,
+          phoneNumber: user.phoneNumber,
+          location: user.location,
+          bio: user.bio,
+          profilePicture: user.profilePicture,
           messages,
           appointments,
           transactions,
@@ -79,7 +87,7 @@ exports.login = async (req, res) => {
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
-  } else if (role == "lawyer") {
+  } else {
     try {
       const { email, password } = req.body;
       const lawyer = await Lawyer.findOne({ email });

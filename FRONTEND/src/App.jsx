@@ -7,7 +7,6 @@ import Categories from "./pages/client/Categories";
 import Addtional from "./pages/client/Additional";
 import Appointments from "./pages/client/Appointments";
 import Messages from "./pages/client/Messages";
-import Transactions from "./pages/client/Transactions";
 import Profile from "./pages/client/Profile";
 import Lawyer_Check from "./pages/client/Lawyer_Check";
 import BookAppointment from "./pages/client/BookAppointment";
@@ -61,7 +60,6 @@ const App = () => {
           element={<Appointments></Appointments>}
         ></Route>
         <Route path="/profile" element={<Profile></Profile>}></Route>
-        <Route path="/transaction" element={<Transactions />}></Route>
         <Route
           path="/lawyer_check"
           element={<Lawyer_Check></Lawyer_Check>}

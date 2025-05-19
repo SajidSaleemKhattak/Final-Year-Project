@@ -66,7 +66,6 @@ const Profile = () => {
   return (
     <div className="">
       {/* HEADER */}
-      {/* HEADER */}
       <div className="flex justify-between mx-20 mt-6">
         <img src={logo} alt="" className="w-[219px] h-[57px]" />
 
@@ -148,16 +147,19 @@ const Profile = () => {
                 <img className="w-21 h-21 rounded-[500px]" src={pfp} alt="" />
                 <p className="font-semibold text-xl">{user.name}</p>
                 <p className="text-[#62B9CB] text-[13px]">
-                  sajidsaleem707@gmail.com
+                  {user.email || "Email not provided"}
                 </p>
-                <p className="text-[#62B9CB] text-[13px]">Number</p>
-                <p className="text-[#62B9CB] text-[13px]">Location</p>
+                <p className="text-[#62B9CB] text-[13px]">
+                  {user.phoneNumber || "Phone number not provided"}
+                </p>
+                <p className="text-[#62B9CB] text-[13px]">
+                  {user.location || "Location not provided"}
+                </p>
               </div>
               <hr className="text-neutral-300 border-1 mt-4" />
               <p className="font-semibold text-xl mt-4">About</p>
-              <p className="text-neutral-600 ">
-                I have professional experiance in treating with clients . I Have
-                worked for 7 years in this field.
+              <p className="text-neutral-600">
+                {user.bio || "Bio not provided"}
               </p>
             </div>
 

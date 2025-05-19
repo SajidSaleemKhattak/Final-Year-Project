@@ -15,6 +15,9 @@ const Client_Signup = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    phoneNumber: "",
+    location: "",
+    bio: "",
   });
 
   const handleChange = (e) => {
@@ -37,10 +40,13 @@ const Client_Signup = () => {
         email: formData.email,
         password: formData.password,
         role: role,
+        phoneNumber: formData.phoneNumber,
+        location: formData.location,
+        bio: formData.bio,
       });
 
-      // Redirect to additional info page or login
-      navigate("/loginAs"); // or navigate("/additional_client");
+      // Redirect to login
+      navigate("/loginAs");
     } catch (err) {
       alert("Signup failed: " + (err.response?.data?.error || err.message));
     }
@@ -67,7 +73,7 @@ const Client_Signup = () => {
             Welcome to Client's Portal
           </p>
           <p className="text-center text-gray-600 text-sm md:text-base max-w-md">
-            Let’s get to know you a bit. Just the essentials to build better
+            Let's get to know you a bit. Just the essentials to build better
             relation with you.
           </p>
 
@@ -107,6 +113,33 @@ const Client_Signup = () => {
             placeholder="Confirm Password"
             required
           />
+          <input
+            name="phoneNumber"
+            onChange={handleChange}
+            value={formData.phoneNumber}
+            className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-md"
+            type="tel"
+            placeholder="Enter Your Phone Number"
+            required
+          />
+          <input
+            name="location"
+            onChange={handleChange}
+            value={formData.location}
+            className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-md"
+            type="text"
+            placeholder="Enter Your Location"
+            required
+          />
+          <textarea
+            name="bio"
+            onChange={handleChange}
+            value={formData.bio}
+            className="border border-gray-300 rounded-xl px-4 py-2 w-full max-w-md resize-none"
+            rows="4"
+            placeholder="Tell us about yourself"
+            required
+          ></textarea>
 
           <button
             type="submit"
