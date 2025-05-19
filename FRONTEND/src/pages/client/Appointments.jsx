@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import logo from "../../assets/home/logo.png";
 import gear from "../../assets/Client/Gear.png";
 import Vector from "../../assets/Client/Vector.png";
@@ -9,7 +9,7 @@ import { IoMdNotificationsOutline } from "react-icons/io";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-const AppointmentsActive = () => {
+const Appointments = () => {
   let [showNotification, setshowNotification] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,15 +37,19 @@ const AppointmentsActive = () => {
       const appointmentsWithLawyer = await Promise.all(
         appointmentsData.map(async (appointment) => {
           try {
-            const lawyerRes = await api.get(
-              `/api/lawyers/${appointment.lawyerId}`
-            );
+            // Extract the lawyer ID properly
+            const lawyerId =
+              typeof appointment.lawyerId === "object"
+                ? appointment.lawyerId._id
+                : appointment.lawyerId;
+            const lawyerRes = await api.get(`/api/lawyers/${lawyerId}`);
             console.log("Lawyer API response:", lawyerRes.data);
             return {
               ...appointment,
-              lawyerName: lawyerRes.data.name, // Try changing this after you see the log
+              lawyerName: lawyerRes.data.name,
             };
           } catch (err) {
+            console.error("Error fetching lawyer details:", err);
             return {
               ...appointment,
               lawyerName: "Unknown Lawyer",
@@ -67,8 +71,6 @@ const AppointmentsActive = () => {
   };
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const currentTab = location.pathname.split("/")[2]; // e.g., 'active', 'request', 'completed'
 
   return (
     <div>
@@ -148,16 +150,7 @@ const AppointmentsActive = () => {
         {/* ACTION AREA */}
         <div className="w-[80%] px-10 py-10">
           <div className="flex justify-between items-center">
-            <p className="text-2xl font-semibold">Appointments</p>
-            <select
-              value={currentTab}
-              onChange={(e) => navigate(`/appointments/${e.target.value}`)}
-              className="bg-neutral-200 text-black px-3 py-2 rounded-xl text-sm font-medium"
-            >
-              <option value="active">Active</option>
-
-              <option value="completed">Completed</option>
-            </select>
+            <p className="text-2xl font-semibold">My Appointments</p>
           </div>
 
           {/* Appointment List */}
@@ -226,4 +219,4 @@ const AppointmentsActive = () => {
   );
 };
 
-export default AppointmentsActive;
+export default Appointments;

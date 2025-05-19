@@ -68,12 +68,12 @@ const App = () => {
         ></Route>
         <Route path="/book-appointment" element={<BookAppointment />}></Route>
 
-        {/* Client Appointments */}
-        <Route path="/appointments/active" element={<AppointmentsActive />} />
+        {/* Remove old appointment routes */}
+        {/* <Route path="/appointments/active" element={<AppointmentsActive />} />
         <Route
           path="/appointments/completed"
           element={<AppointmentsCompleted />}
-        />
+        /> */}
 
         <Route path="/payment" element={<PaymentPage />}></Route>
         <Route

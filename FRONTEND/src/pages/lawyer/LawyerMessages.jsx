@@ -26,6 +26,7 @@ const LawyerMessages = () => {
   const messagesEndRef = useRef(null);
 
   const lawyer = JSON.parse(localStorage.getItem("lawyer"));
+  const lawyerId = lawyer._id.toString();
 
   useEffect(() => {
     // Initialize socket connection
@@ -33,7 +34,7 @@ const LawyerMessages = () => {
 
     // Connect lawyer to socket
     socketRef.current.emit("user_connected", {
-      userId: lawyer._id,
+      userId: lawyerId,
       userType: "Lawyer",
     });
 
@@ -41,7 +42,7 @@ const LawyerMessages = () => {
     const loadChats = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/chat/lawyer/${lawyer._id}`,
+          `http://localhost:5000/api/chat/lawyer/${lawyerId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -78,11 +79,7 @@ const LawyerMessages = () => {
     };
 
     const handleTyping = ({ chatId, userId, isTyping }) => {
-      if (
-        selectedChat &&
-        chatId === selectedChat._id &&
-        userId !== lawyer._id
-      ) {
+      if (selectedChat && chatId === selectedChat._id && userId !== lawyerId) {
         setIsTyping(isTyping);
       }
     };
@@ -99,7 +96,7 @@ const LawyerMessages = () => {
         socketRef.current.disconnect();
       }
     };
-  }, [lawyer._id, selectedChat]);
+  }, [lawyerId, selectedChat]);
 
   useEffect(() => {
     // Scroll to bottom when messages change
@@ -111,8 +108,8 @@ const LawyerMessages = () => {
     try {
       const response = await axios.get(
         `http://localhost:5000/api/chat/history/${chat.participants.find(
-          (p) => p !== lawyer._id
-        )}/${lawyer._id}`,
+          (p) => p !== lawyerId
+        )}/${lawyerId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -132,7 +129,7 @@ const LawyerMessages = () => {
     if (selectedChat) {
       socketRef.current.emit("typing_start", {
         chatId: selectedChat._id,
-        userId: lawyer._id,
+        userId: lawyerId,
       });
 
       if (typingTimeoutRef.current) {
@@ -142,7 +139,7 @@ const LawyerMessages = () => {
       typingTimeoutRef.current = setTimeout(() => {
         socketRef.current.emit("typing_end", {
           chatId: selectedChat._id,
-          userId: lawyer._id,
+          userId: lawyerId,
         });
       }, 1000);
     }
@@ -153,9 +150,9 @@ const LawyerMessages = () => {
     if (newMessage.trim() && selectedChat) {
       const messageData = {
         chatId: selectedChat._id,
-        senderId: lawyer._id,
+        senderId: lawyerId,
         senderType: "Lawyer",
-        receiverId: selectedChat.participants.find((p) => p !== lawyer._id),
+        receiverId: selectedChat.participants.find((p) => p !== lawyerId),
         receiverType: "User",
         message: newMessage,
         timestamp: new Date(),
@@ -168,7 +165,7 @@ const LawyerMessages = () => {
           clearTimeout(typingTimeoutRef.current);
           socketRef.current.emit("typing_end", {
             chatId: selectedChat._id,
-            userId: lawyer._id,
+            userId: lawyerId,
           });
         }
 
@@ -353,14 +350,14 @@ const LawyerMessages = () => {
                     <div
                       key={index}
                       className={`flex ${
-                        message.senderId === lawyer._id
+                        message.senderId === lawyerId
                           ? "justify-end"
                           : "justify-start"
                       } mb-4`}
                     >
                       <div
                         className={`max-w-[70%] rounded-xl p-3 ${
-                          message.senderId === lawyer._id
+                          message.senderId === lawyerId
                             ? "bg-[#62B9CB] text-white"
                             : "bg-gray-100"
                         }`}
