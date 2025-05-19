@@ -3,7 +3,7 @@ import logo from "../../assets/home/logo.png";
 import gear from "../../assets/Client/Gear.png";
 import Vector from "../../assets/Client/Vector.png";
 import pfp from "../../assets/Client/pfp.png";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Chat from "../../components/Chat";
 import io from "socket.io-client";
@@ -15,6 +15,7 @@ const Lawyer_Check = () => {
   console.log("Received lawyer data:", lawyer);
   const [showChat, setShowChat] = useState(false);
   const socket = io("http://localhost:5000");
+  const navigate = useNavigate();
 
   const handleBookNow = async (lawyerId, userName, userEmail) => {
     try {
@@ -245,7 +246,7 @@ const Lawyer_Check = () => {
                   </button>
                   <button
                     onClick={() =>
-                      handleBookNow(lawyer._id, user.name, user.email)
+                      navigate("/book-appointment", { state: { lawyer, user } })
                     }
                     className="bg-[#62B9CB] text-white px-8 py-2 rounded-xl"
                   >

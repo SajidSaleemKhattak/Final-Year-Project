@@ -1,5 +1,5 @@
-import React from "react";
-import { FaUserAlt, FaStar } from "react-icons/fa"; // Add missing imports for FaUserAlt and FaStar
+import React, { useState, useEffect } from "react";
+import { FaUserAlt, FaStar } from "react-icons/fa";
 import pfp from "../../assets/Client/pfp.png";
 import LSideBar from "../lawyer/components/L-sidebar.jsx";
 import logo from "./../../assets/home/logo.png";
@@ -7,47 +7,83 @@ import gear from "./../../assets/Client/Gear.png";
 import Vector from "./../../assets/Client/Vector.png";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { Link } from "react-router-dom";
-import { useState } from "react";
 
 const LawyerProfile = () => {
-  let [showNotification, setshowNotification] = useState(false);
-  const lawyer = JSON.parse(localStorage.getItem("lawyer"));
+  const [showNotification, setShowNotification] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [lawyer, setLawyer] = useState(
+    JSON.parse(localStorage.getItem("lawyer")) || {}
+  );
+  const [editedLawyer, setEditedLawyer] = useState({});
+  const [reviews, setReviews] = useState([]);
+  const [areasOfPractice, setAreasOfPractice] = useState([]);
+  const [newAreaOfPractice, setNewAreaOfPractice] = useState("");
+
+  useEffect(() => {
+    // Initialize editedLawyer with current lawyer data
+    setEditedLawyer(lawyer);
+    // Initialize practice areas from lawyer data
+    setAreasOfPractice(lawyer.areasOfPractice || []);
+    // TODO: Fetch reviews from your backend API
+    // Example: fetchLawyerReviews(lawyer.id).then(setReviews);
+    console.log("lawyer", lawyer);
+    console.log("areasOfPractice", lawyer.areasOfPractice);
+  }, [lawyer]);
 
   const handleNotification = () => {
-    {
-      setshowNotification((toggle) => !toggle);
+    setShowNotification((toggle) => !toggle);
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    // TODO: Add API call to update lawyer data
+    setLawyer(editedLawyer);
+    localStorage.setItem("lawyer", JSON.stringify(editedLawyer));
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditedLawyer(lawyer);
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditedLawyer((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleAddAreaOfPractice = () => {
+    if (
+      newAreaOfPractice.trim() &&
+      !areasOfPractice.includes(newAreaOfPractice.trim())
+    ) {
+      setAreasOfPractice([...areasOfPractice, newAreaOfPractice.trim()]);
+      setEditedLawyer((prev) => ({
+        ...prev,
+        areasOfPractice: [...areasOfPractice, newAreaOfPractice.trim()],
+      }));
+      setNewAreaOfPractice("");
     }
   };
+
+  const handleRemoveAreaOfPractice = (areaToRemove) => {
+    const updatedAreas = areasOfPractice.filter(
+      (area) => area !== areaToRemove
+    );
+    setAreasOfPractice(updatedAreas);
+    setEditedLawyer((prev) => ({
+      ...prev,
+      areasOfPractice: updatedAreas,
+    }));
+  };
+
   let active = "profile";
-  let current_appointments = [
-    {
-      name: "John Doe",
-      type: "CivilCriminal",
-      Price: "4000",
-      Timing: "16:04",
-    },
-    {
-      name: "Jane Smith",
-      type: "Criminal",
-      Price: "5000",
-      Timing: "14:30",
-    },
-  ];
-  let array_previousAppointments = [
-    {
-      name: "Mike Jordan",
-      type: "Corporate",
-      Price: "6000",
-      Timing: "12:00",
-    },
-    {
-      name: "Sarah Lee",
-      type: "Family Law",
-      Price: "4500",
-      Timing: "10:15",
-    },
-  ];
-  
 
   return (
     <>
@@ -113,7 +149,11 @@ const LawyerProfile = () => {
 
             <img src={gear} className="w-5 h-5" alt="" />
             <div className="flex justify-between gap-1.5">
-              <img src={pfp} className="w-7 h-7 rounded-4xl" alt="" />
+              <img
+                src={lawyer.profilePicture || pfp}
+                className="w-7 h-7 rounded-4xl"
+                alt=""
+              />
               <p className="text-neutral-600 font-semibold">{lawyer.name}</p>
             </div>
           </div>
@@ -133,56 +173,183 @@ const LawyerProfile = () => {
               <div className="flex flex-col border-1 border-neutral-200 rounded-xl w-3/10 px-3 py-4">
                 <div className="flex flex-col gap-1 items-center justify-center">
                   <FaUserAlt className="text-5xl text-[#62B9CB]" />
-                  <p className="font-semibold text-xl">John Lawyer</p>
-                  <p className="text-[#62B9CB] text-[13px]">
-                    Civil Pro, Criminal
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="name"
+                      value={editedLawyer.name || ""}
+                      onChange={handleInputChange}
+                      className="font-semibold text-xl text-center border rounded p-1"
+                    />
+                  ) : (
+                    <p className="font-semibold text-xl">{lawyer.name}</p>
+                  )}
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="specialization"
+                      value={editedLawyer.specialization || ""}
+                      onChange={handleInputChange}
+                      className="text-[#62B9CB] text-[13px] text-center border rounded p-1"
+                    />
+                  ) : (
+                    <p className="text-[#62B9CB] text-[13px]">
+                      {lawyer.specialization || "Civil Pro, Criminal"}
+                    </p>
+                  )}
                   <div className="flex gap-1 text-[#62B9CB] text-[13px] mt-1">
                     {[...Array(5)].map((_, index) => (
                       <FaStar key={index} />
                     ))}
                   </div>
-                  <div>
-                    <button className="flex items-center bg-[#62B9CB] text-white py-2 px-14 border-0 rounded-lg mt-4">
-                      Personal Information
+
+                  {isEditing ? (
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={handleSave}
+                        className="bg-green-500 text-white py-2 px-6 border-0 rounded-lg"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancel}
+                        className="bg-red-500 text-white py-2 px-6 border-0 rounded-lg"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleEdit}
+                      className="flex items-center bg-[#62B9CB] text-white py-2 px-14 border-0 rounded-lg mt-4"
+                    >
+                      Edit Profile
                     </button>
-                  </div>
+                  )}
 
                   <div className="flex justify-between w-full px-4 mt-3">
                     <div className="font-medium">Location</div>
-                    <div>Islamabad, Pakistan</div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="location"
+                        value={editedLawyer.location || ""}
+                        onChange={handleInputChange}
+                        className="border rounded p-1"
+                      />
+                    ) : (
+                      <div>{lawyer.location || "Islamabad, Pakistan"}</div>
+                    )}
                   </div>
+
                   <div className="flex justify-between w-full px-4 mt-3">
                     <div className="font-medium">Language</div>
-                    <div>Urdu, English</div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="languages"
+                        value={editedLawyer.languages || ""}
+                        onChange={handleInputChange}
+                        className="border rounded p-1"
+                      />
+                    ) : (
+                      <div>{lawyer.languages || "Urdu, English"}</div>
+                    )}
                   </div>
+
                   <div className="flex justify-between w-full px-4 mt-3">
                     <div className="font-medium">Member Since</div>
-                    <div>January 2024</div>
+                    <div>{lawyer.memberSince || "January 2024"}</div>
                   </div>
+
                   <div className="flex justify-between w-full px-4 mt-3">
                     <div className="font-medium">Experience</div>
-                    <div>20+ Years</div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="experience"
+                        value={editedLawyer.experience || ""}
+                        onChange={handleInputChange}
+                        className="border rounded p-1"
+                      />
+                    ) : (
+                      <div>{lawyer.experience || "20+ Years"}</div>
+                    )}
                   </div>
+
                   <div className="flex justify-between w-full px-4 mt-3">
                     <div className="font-medium">Rates/Fee</div>
-                    <div>RS. 1000/Hour</div>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="rates"
+                        value={editedLawyer.rates || ""}
+                        onChange={handleInputChange}
+                        className="border rounded p-1"
+                      />
+                    ) : (
+                      <div>{lawyer.rates || "RS. 1000/Hour"}</div>
+                    )}
                   </div>
+
                   <div>
                     <button className="flex items-center bg-[#62B9CB] text-white py-2 px-20 border-0 rounded-lg mt-8">
                       Area of Practice
                     </button>
-                    <div className="grid grid-cols-2 gap-2 ">
-                      <button className="flex items-center bg-[#62B9CB] text-white text-center py-2 border-0  rounded-xl mt-4 px-2">
-                        Family Matters
-                      </button>
-                      <button className="flex items-center bg-[#62B9CB] text-center text-white py-2 border-0 rounded-xl mt-4 px-2">
-                        Corporates Business
-                      </button>
-                      <button className="flex items-center bg-[#62B9CB] text-white py-2  border-0 rounded-xl mt-4 px-2">
-                        Immigration Case
-                      </button>
-                    </div>
+                    {isEditing ? (
+                      <div className="mt-4">
+                        <div className="flex gap-2 mb-4">
+                          <input
+                            type="text"
+                            value={newAreaOfPractice}
+                            onChange={(e) =>
+                              setNewAreaOfPractice(e.target.value)
+                            }
+                            placeholder="Add new practice area"
+                            className="border rounded p-2 flex-grow"
+                          />
+                          <button
+                            onClick={handleAddAreaOfPractice}
+                            className="bg-[#62B9CB] text-white px-4 py-2 rounded-lg"
+                          >
+                            Add
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {areasOfPractice.map((area, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-2 bg-[#62B9CB] text-white px-3 py-1 rounded-full"
+                            >
+                              <span>{area}</span>
+                              <button
+                                onClick={() => handleRemoveAreaOfPractice(area)}
+                                className="text-white hover:text-red-200"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 mt-4">
+                        {areasOfPractice.length > 0 ? (
+                          areasOfPractice.map((area, index) => (
+                            <div
+                              key={index}
+                              className="bg-[#62B9CB] text-white px-3 py-1 rounded-full"
+                            >
+                              {area}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-neutral-600">
+                            No practice areas specified
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -191,51 +358,73 @@ const LawyerProfile = () => {
                 <div>
                   <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4 mt-4">
                     <p className="font-semibold text-xl mt-4">About</p>
-                    <p className="text-neutral-600 ">
-                      Experienced lawyer specializing in Civil and Criminal law.
-                      Known for providing expert legal advice and representing
-                      clients in court effectively.
-                    </p>
+                    {isEditing ? (
+                      <div className="mt-2">
+                        <textarea
+                          name="bio"
+                          value={editedLawyer.bio || ""}
+                          onChange={handleInputChange}
+                          className="text-neutral-600 w-full border rounded p-2"
+                          rows="6"
+                          placeholder="Write about your experience, expertise, and what makes you unique as a lawyer..."
+                        />
+                        <div className="mt-2 text-sm text-neutral-500">
+                          Share your professional background, achievements, and
+                          what clients can expect when working with you.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2">
+                        {lawyer.bio ? (
+                          <p className="text-neutral-600 whitespace-pre-line">
+                            {lawyer.bio}
+                          </p>
+                        ) : (
+                          <p className="text-neutral-600 italic">
+                            No bio provided. Click edit to add your professional
+                            background and expertise.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4 mt-4 relative">
                     <p className="font-semibold text-xl mt-4 mb-6">Reviews</p>
 
-                    {[1, 2, 3].map((_, index) => (
-                      <div key={index} className="mb-6">
-                        <div className="flex items-center gap-3">
-                          <FaUserAlt className="text-2xl text-[#62B9CB]" />
-                          <p className="font-semibold text-md">Jane Doe</p>
-                        </div>
-
-                        <div className="flex justify-start gap-2 items-center mt-2 mb-1">
-                          <div className="flex gap-1 text-yellow-500 text-sm">
-                            {[...Array(5)].map((_, i) => (
-                              <FaStar key={i} />
-                            ))}
+                    {reviews.length > 0 ? (
+                      reviews.map((review, index) => (
+                        <div key={index} className="mb-6">
+                          <div className="flex items-center gap-3">
+                            <FaUserAlt className="text-2xl text-[#62B9CB]" />
+                            <p className="font-semibold text-md">
+                              {review.reviewerName}
+                            </p>
                           </div>
-                          <p className="text-sm text-neutral-400">
-                            April 24, 2024
+
+                          <div className="flex justify-start gap-2 items-center mt-2 mb-1">
+                            <div className="flex gap-1 text-yellow-500 text-sm">
+                              {[...Array(review.rating)].map((_, i) => (
+                                <FaStar key={i} />
+                              ))}
+                            </div>
+                            <p className="text-sm text-neutral-400">
+                              {new Date(review.date).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          <p className="text-neutral-600 text-sm">
+                            {review.comment}
                           </p>
+
+                          {index < reviews.length - 1 && (
+                            <hr className="mt-4 border-neutral-300" />
+                          )}
                         </div>
-
-                        <p className="text-neutral-600 text-sm">
-                          Experienced lawyer specializing in Civil and Criminal
-                          law. Known for providing expert legal advice and
-                          representing clients in court effectively.
-                        </p>
-
-                        {index < 2 && (
-                          <hr className="mt-4 border-neutral-300" />
-                        )}
-                      </div>
-                    ))}
-
-                    <div className="flex justify-end mt-4">
-                      <button className="bg-[#62B9CB] text-white px-4 py-2 rounded-xl font-semibold">
-                        Edit Profile
-                      </button>
-                    </div>
+                      ))
+                    ) : (
+                      <p className="text-neutral-600">No reviews yet</p>
+                    )}
                   </div>
                 </div>
               </div>

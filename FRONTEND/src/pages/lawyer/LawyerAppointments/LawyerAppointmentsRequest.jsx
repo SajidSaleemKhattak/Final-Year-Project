@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../../assets/home/logo.png";
 import gear from "../../../assets/Client/Gear.png";
@@ -7,51 +7,103 @@ import pfp from "../../../assets/Client/pfp.png";
 import LSideBar from "../components/L-sidebar.jsx";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import axios from "axios";
 
 const LawyerAppointmentsRequest = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentTab = location.pathname.split("/")[2];
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const lawyer = JSON.parse(localStorage.getItem("lawyer"));
+  const [statusFilter, setStatusFilter] = useState("pending");
 
-  const array_appointments = [
-    {
-      img: pfp,
-      name: "Client A",
-      type: "Civil",
-      Price: 5000,
-      Timing: "10:00",
+  // Configure axios defaults
+  const api = axios.create({
+    baseURL: "http://localhost:5000",
+    withCredentials: true,
+    headers: {
+      "Content-Type": "application/json",
     },
-    {
-      img: pfp,
-      name: "Client B",
-      type: "Criminal",
-      Price: 6000,
-      Timing: "11:30",
-    },
-    {
-      img: pfp,
-      name: "Client C",
-      type: "Family",
-      Price: 7000,
-      Timing: "13:45",
-    },
-    {
-      img: pfp,
-      name: "Client D",
-      type: "Corporate",
-      Price: 8000,
-      Timing: "15:00",
-    },
-  ];
+  });
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [statusFilter]);
+
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(
+        `/api/bookings?lawyerId=${lawyer._id}&status=${statusFilter}`
+      );
+      setAppointments(response.data);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (bookingId, newStatus) => {
+    try {
+      await api.patch(`/api/bookings/${bookingId}/status`, {
+        status: newStatus,
+      });
+      // Refresh appointments after update
+      fetchAppointments();
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      alert("Failed to update appointment status. Please try again.");
+    }
+  };
+
   let [showNotification, setshowNotification] = useState(false);
 
   const handleNotification = () => {
-    {
-      setshowNotification((toggle) => !toggle);
+    setshowNotification((toggle) => !toggle);
+  };
+
+  const renderActionButtons = (appointment) => {
+    switch (appointment.status) {
+      case "pending":
+        return (
+          <div className="flex -ml-16 mt-6 gap-2">
+            <button
+              onClick={() => handleStatusUpdate(appointment._id, "cancelled")}
+              className="px-6 py-2 border-2 border-gray-400 text-sm font-semibold rounded-lg text-black hover:bg-gray-100"
+            >
+              Decline Appointment
+            </button>
+            <button
+              onClick={() => handleStatusUpdate(appointment._id, "confirmed")}
+              className="px-6 py-2 bg-[#62B9CB] text-white text-sm font-semibold rounded-lg hover:bg-[#4fa8b8]"
+            >
+              Accept Appointment
+            </button>
+          </div>
+        );
+      case "confirmed":
+        return (
+          <div className="flex -ml-16 mt-6 gap-2">
+            <button
+              onClick={() => handleStatusUpdate(appointment._id, "cancelled")}
+              className="px-6 py-2 border-2 border-gray-400 text-sm font-semibold rounded-lg text-black hover:bg-gray-100"
+            >
+              Cancel Appointment
+            </button>
+            <button
+              onClick={() => handleStatusUpdate(appointment._id, "completed")}
+              className="px-6 py-2 bg-[#62B9CB] text-white text-sm font-semibold rounded-lg hover:bg-[#4fa8b8]"
+            >
+              Mark as Completed
+            </button>
+          </div>
+        );
+      default:
+        return null;
     }
   };
-  const lawyer = JSON.parse(localStorage.getItem("lawyer"));
 
   return (
     <div>
@@ -134,60 +186,65 @@ const LawyerAppointmentsRequest = () => {
           <div className="flex justify-between items-center">
             <p className="text-2xl font-semibold">Appointments</p>
             <select
-              value={currentTab}
-              onChange={(e) =>
-                navigate(`/lawyerappointments/${e.target.value}`)
-              }
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="bg-neutral-200 text-black px-3 py-2 rounded-xl text-sm font-medium"
             >
-              <option value="active">Active</option>
-              <option value="request">Requests</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
               <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
 
           {/* Clients List */}
           <div className="border border-neutral-200 rounded-2xl py-10 px-10 mt-10">
             <div className="grid grid-cols-2 gap-6">
-              {array_appointments.map((element, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col border border-neutral-200 rounded-2xl px-5 py-6"
-                >
-                  <div className="flex gap-3 items-start">
-                    <img
-                      src={element.img}
-                      alt="client"
-                      className="w-12 h-12 rounded-full"
-                    />
+              {loading ? (
+                <div className="col-span-2 text-center py-4">
+                  Loading appointments...
+                </div>
+              ) : appointments.length === 0 ? (
+                <div className="col-span-2 text-center py-4 text-gray-500">
+                  No appointments found
+                </div>
+              ) : (
+                appointments.map((appointment) => (
+                  <div
+                    key={appointment._id}
+                    className="flex flex-col border border-neutral-200 rounded-2xl px-5 py-6"
+                  >
+                    <div className="flex gap-3 items-start">
+                      <img
+                        src={pfp}
+                        alt="client"
+                        className="w-12 h-12 rounded-full"
+                      />
 
-                    <div>
-                      <p className="font-semibold">{element.name}</p>
+                      <div>
+                        <p className="font-semibold">{appointment.userName}</p>
+                        <p className="text-sm text-gray-500">
+                          {appointment.userEmail}
+                        </p>
 
-                      <div className="flex items-center gap-6 text-[#62B9CB] mt-2">
-                        <p>Time</p>
-                        <p className="text-sm font-semibold">
-                          {element.Timing}
-                        </p>
-                      </div>
-                      <div className="flex items-center text-{#62B9CB} gap-6 mt-1">
-                        <p className="text-[#62B9CB]">Amount</p>
-                        <p className="text-sm font-semibold text-#62B9CB]">
-                          Rs. {element.Price}
-                        </p>
-                      </div>
-                      <div className="flex -ml-16 mt-6 gap-2">
-                        <button className="px-6 py-2 border-2 border-gray-400 text-sm font-semibold rounded-lg text-black">
-                          Decline Appointment
-                        </button>
-                        <button className="px-6 py-2 bg-[#62B9CB] text-white text-sm font-semibold rounded-lg">
-                          Accept Appointment
-                        </button>
+                        <div className="flex items-center gap-6 text-[#62B9CB] mt-2">
+                          <p>Time</p>
+                          <p className="text-sm font-semibold">
+                            {appointment.time}
+                          </p>
+                        </div>
+                        <div className="flex items-center text-[#62B9CB] gap-6 mt-1">
+                          <p className="text-[#62B9CB]">Date</p>
+                          <p className="text-sm font-semibold">
+                            {new Date(appointment.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {renderActionButtons(appointment)}
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>

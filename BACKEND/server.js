@@ -4,11 +4,14 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRouter");
 const lawyerRoutes = require("./routes/lawyerRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
-const emailRoutes = require("./routes/emailRoutes"); // Add this line
-require("dotenv").config();
+const emailRoutes = require("./routes/emailRoutes");
+const dotenv = require("dotenv");
 const socketIo = require("socket.io");
 const http = require("http");
 const setupChatSocket = require("./socket/chatSocket");
+const paymentRoutes = require("./routes/payments");
+
+dotenv.config();
 const app = express();
 
 // Create HTTP server
@@ -28,17 +31,22 @@ app.set("io", io);
 // Setup chat socket handlers
 setupChatSocket(io);
 
-// Middleware
+// CORS configuration
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+    optionsSuccessStatus: 200,
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // For form data
 
+// Body parsing middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -50,8 +58,9 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/lawyers", lawyerRoutes);
-app.use("/api/book", bookingRoutes);
-app.use("/api", emailRoutes); // Add this line for email routes
+app.use("/api/bookings", bookingRoutes);
+app.use("/api", emailRoutes);
+app.use("/api", paymentRoutes);
 
 // Chat routes
 const chatRoutes = require("./routes/chatRoutes");

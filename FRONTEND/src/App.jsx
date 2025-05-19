@@ -10,8 +10,8 @@ import Messages from "./pages/client/Messages";
 import Transactions from "./pages/client/Transactions";
 import Profile from "./pages/client/Profile";
 import Lawyer_Check from "./pages/client/Lawyer_Check";
-import Book_appointment from "./pages/client/Book_appointment";
-import Payment_method from "./pages/client/Payment_method";
+import BookAppointment from "./pages/client/BookAppointment";
+import PaymentPage from "./pages/client/PaymentPage";
 import Payment_done_undone from "./pages/client/Payment_done_undone";
 import Reviews from "./pages/client/Reviews";
 import { Routes, Route } from "react-router-dom";
@@ -30,6 +30,7 @@ import AppointmentsActive from "./pages/client/Appointments";
 import Contact from "./pages/client/Contact";
 import LoginAs from "./pages/LoginAs";
 import LoginLawyer from "./pages/LoginLawyer";
+
 const App = () => {
   return (
     <div>
@@ -65,23 +66,16 @@ const App = () => {
           path="/lawyer_check"
           element={<Lawyer_Check></Lawyer_Check>}
         ></Route>
-        <Route
-          path="/book_appoitntment"
-          element={<Book_appointment></Book_appointment>}
-        ></Route>
+        <Route path="/book-appointment" element={<BookAppointment />}></Route>
 
         {/* Client Appointments */}
         <Route path="/appointments/active" element={<AppointmentsActive />} />
-
         <Route
           path="/appointments/completed"
           element={<AppointmentsCompleted />}
         />
 
-        <Route
-          path="/payment_method"
-          element={<Payment_method></Payment_method>}
-        ></Route>
+        <Route path="/payment" element={<PaymentPage />}></Route>
         <Route
           path="/payment_done_undone"
           element={<Payment_done_undone></Payment_done_undone>}

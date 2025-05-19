@@ -8,10 +8,13 @@ import { Link } from "react-router-dom";
 import { FaPaperPlane } from "react-icons/fa";
 import { IoCallOutline } from "react-icons/io5";
 import { IoMdNotificationsOutline } from "react-icons/io";
+import { FiPaperclip } from "react-icons/fi";
+import { AiOutlineFile, AiOutlineDownload } from "react-icons/ai";
 import axios from "axios";
 import io from "socket.io-client";
 
 const SOCKET_URL = "http://localhost:5000";
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB max file size
 
 const Messages = () => {
   const [showNotification, setshowNotification] = useState(false);
@@ -23,10 +26,13 @@ const Messages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [fileUploading, setFileUploading] = useState(false);
 
   const socketRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const active = "messages";
@@ -199,6 +205,172 @@ const Messages = () => {
 
   const handleNotification = () => {
     setshowNotification((toggle) => !toggle);
+  };
+
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        alert("File size should not exceed 5MB");
+        return;
+      }
+      setSelectedFile(file);
+      handleSendFile(file);
+    }
+  };
+
+  const handleSendFile = async (file) => {
+    if (!selectedChat) return;
+
+    try {
+      setFileUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("chatId", selectedChat._id);
+      formData.append("senderId", user._id);
+      formData.append(
+        "receiverId",
+        selectedChat.participants.find((p) => p !== user._id)
+      );
+
+      // Upload file to server
+      const uploadResponse = await axios.post(
+        `http://localhost:5000/api/chat/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      const fileData = uploadResponse.data;
+
+      // Send message with file information
+      const messageData = {
+        chatId: selectedChat._id,
+        senderId: user._id,
+        senderType: "User",
+        receiverId: selectedChat.participants.find((p) => p !== user._id),
+        receiverType: "Lawyer",
+        message: "Sent a file: " + file.name,
+        timestamp: new Date(),
+        fileUrl: fileData.fileUrl,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size,
+      };
+
+      // Emit through socket
+      socketRef.current.emit("send_message", messageData);
+
+      // Persist to database
+      await axios.post(`http://localhost:5000/api/chat/message`, messageData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      setSelectedFile(null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
+  const getFileIcon = (fileType) => {
+    if (fileType.startsWith("image/")) {
+      return "📷";
+    } else if (fileType.startsWith("application/pdf")) {
+      return "📄";
+    } else if (fileType.startsWith("video/")) {
+      return "🎥";
+    } else {
+      return "📎";
+    }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + " B";
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    else return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+  };
+
+  const renderMessage = (message) => {
+    const isOwnMessage = message.senderId === user._id;
+
+    if (message.fileUrl) {
+      return (
+        <div
+          className={`flex ${
+            isOwnMessage ? "justify-end" : "justify-start"
+          } mb-4`}
+        >
+          <div
+            className={`max-w-[70%] rounded-xl p-3 ${
+              isOwnMessage ? "bg-[#62B9CB] text-white" : "bg-gray-100"
+            }`}
+          >
+            {message.fileType.startsWith("image/") ? (
+              // Image preview
+              <div className="mb-2">
+                <img
+                  src={message.fileUrl}
+                  alt={message.fileName}
+                  className="max-w-full rounded-lg cursor-pointer hover:opacity-90"
+                  onClick={() => window.open(message.fileUrl, "_blank")}
+                />
+              </div>
+            ) : (
+              // File attachment
+              <div className="flex items-center gap-2 mb-2">
+                <span>{getFileIcon(message.fileType)}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate">{message.fileName}</p>
+                  <p className="text-sm opacity-75">
+                    {formatFileSize(message.fileSize)}
+                  </p>
+                </div>
+                <a
+                  href={message.fileUrl}
+                  download={message.fileName}
+                  className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <AiOutlineDownload size={20} />
+                </a>
+              </div>
+            )}
+            <p className="text-xs mt-1 opacity-70">
+              {new Date(message.timestamp).toLocaleTimeString()}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        className={`flex ${
+          isOwnMessage ? "justify-end" : "justify-start"
+        } mb-4`}
+      >
+        <div
+          className={`max-w-[70%] rounded-xl p-3 ${
+            isOwnMessage ? "bg-[#62B9CB] text-white" : "bg-gray-100"
+          }`}
+        >
+          <p>{message.message}</p>
+          <p className="text-xs mt-1 opacity-70">
+            {new Date(message.timestamp).toLocaleTimeString()}
+          </p>
+        </div>
+      </div>
+    );
   };
 
   const filteredChats = chats.filter(
@@ -375,29 +547,7 @@ const Messages = () => {
 
                 {/* Message area */}
                 <div className="flex-grow px-4 py-2 overflow-auto">
-                  {messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex ${
-                        message.senderId === user._id
-                          ? "justify-end"
-                          : "justify-start"
-                      } mb-4`}
-                    >
-                      <div
-                        className={`max-w-[70%] rounded-xl p-3 ${
-                          message.senderId === user._id
-                            ? "bg-[#62B9CB] text-white"
-                            : "bg-gray-100"
-                        }`}
-                      >
-                        <p>{message.message}</p>
-                        <p className="text-xs mt-1 opacity-70">
-                          {new Date(message.timestamp).toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                  {messages.map((message, index) => renderMessage(message))}
                   {isTyping && (
                     <div className="text-sm text-neutral-500 italic">
                       Lawyer is typing...
@@ -423,9 +573,30 @@ const Messages = () => {
                     className="border border-neutral-300 rounded px-4 py-2 w-full"
                     placeholder="Type your message"
                   />
-                  <div className="bg-[#62B9CB] py-2 rounded-sm flex px-2">
-                    <input type="file" className="cursor-pointer" />
+
+                  {/* File upload button */}
+                  <div className="relative">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      accept="image/*,.pdf,.doc,.docx,.txt"
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                      disabled={fileUploading}
+                    >
+                      <FiPaperclip
+                        size={20}
+                        className={`text-[#62B9CB] ${
+                          fileUploading ? "animate-pulse" : ""
+                        }`}
+                      />
+                    </button>
                   </div>
+
                   <FaPaperPlane
                     onClick={handleSendMessage}
                     className="text-[#62B9CB] text-2xl cursor-pointer"

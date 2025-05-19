@@ -33,9 +33,9 @@ const LSideBar = () => {
         <button>Messages</button>
       </Link>
       <Link
-        to="/lawyerappointments/active"
+        to="/lawyerappointments/request"
         className={`flex gap-3 items-center border-1 border-neutral-200 pr-26 pl-5 py-2 rounded-xl w-4/5 ${
-          active === "/lawyerappointments/active"
+          active === "/lawyerappointments/request"
             ? "bg-[#62B9CB] text-white"
             : ""
         }`}

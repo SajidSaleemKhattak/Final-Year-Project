@@ -40,7 +40,7 @@ const Client_Signup = () => {
       });
 
       // Redirect to additional info page or login
-      navigate("/login"); // or navigate("/additional_client");
+      navigate("/loginAs"); // or navigate("/additional_client");
     } catch (err) {
       alert("Signup failed: " + (err.response?.data?.error || err.message));
     }

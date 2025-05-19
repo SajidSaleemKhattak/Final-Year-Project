@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../../assets/home/logo.png";
 import gear from "../../assets/Client/Gear.png";
@@ -6,38 +6,69 @@ import Vector from "../../assets/Client/Vector.png";
 import pfp from "../../assets/Client/pfp.png";
 import Sidebar from "../../pages/client/components/C-LSidebar";
 import { IoMdNotificationsOutline } from "react-icons/io";
-import { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 const AppointmentsActive = () => {
   let [showNotification, setshowNotification] = useState(false);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
   const user = JSON.parse(localStorage.getItem("user"));
 
-  const handleNotification = () => {
-    {
-      setshowNotification((toggle) => !toggle);
+  // Configure axios defaults
+  const api = axios.create({
+    baseURL: "http://localhost:5000",
+    withCredentials: true,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await api.get(`/api/bookings?userEmail=${user.email}`);
+      const appointmentsData = response.data;
+
+      // Fetch lawyer names for each appointment
+      const appointmentsWithLawyer = await Promise.all(
+        appointmentsData.map(async (appointment) => {
+          try {
+            const lawyerRes = await api.get(
+              `/api/lawyers/${appointment.lawyerId}`
+            );
+            console.log("Lawyer API response:", lawyerRes.data);
+            return {
+              ...appointment,
+              lawyerName: lawyerRes.data.name, // Try changing this after you see the log
+            };
+          } catch (err) {
+            return {
+              ...appointment,
+              lawyerName: "Unknown Lawyer",
+            };
+          }
+        })
+      );
+
+      setAppointments(appointmentsWithLawyer);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleNotification = () => {
+    setshowNotification((toggle) => !toggle);
+  };
+
   const navigate = useNavigate();
   const location = useLocation();
   const currentTab = location.pathname.split("/")[2]; // e.g., 'active', 'request', 'completed'
-
-  const appointments = [
-    {
-      img: pfp,
-      name: "Danish",
-      type: "CivilCriminal",
-      price: 4,
-      timing: "12:09",
-    },
-    {
-      img: pfp,
-      name: "Sara",
-      type: "Family Law",
-      price: 6,
-      timing: "3:45",
-    },
-  ];
 
   return (
     <div>
@@ -132,44 +163,61 @@ const AppointmentsActive = () => {
           {/* Appointment List */}
           <div className="border border-neutral-200 rounded-2xl py-6 px-10 mt-6">
             <div className="flex flex-col gap-5">
-              {appointments.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex justify-around bg-blue-50 border border-neutral-200 rounded-2xl px-5 py-7 items-center"
-                >
-                  <div className="flex justify-center items-center gap-4">
-                    <img
-                      src={item.img}
-                      className="w-12 h-12 rounded-full"
-                      alt="Lawyer Pfp"
-                    />
-                    <div>
-                      <p className="font-bold">{item.name}</p>
+              {loading ? (
+                <div className="text-center py-4">Loading appointments...</div>
+              ) : appointments.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">
+                  No appointments found
+                </div>
+              ) : (
+                appointments.map((appointment) => (
+                  <div
+                    key={appointment._id}
+                    className="flex justify-around bg-blue-50 border border-neutral-200 rounded-2xl px-5 py-7 items-center"
+                  >
+                    <div className="flex justify-center items-center gap-4">
+                      <img
+                        src={pfp}
+                        className="w-12 h-12 rounded-full"
+                        alt="Lawyer Pfp"
+                      />
+                      <div>
+                        <p className="font-bold">{appointment.lawyerName}</p>
+                        <p className="text-[13px] font-semibold text-[#62B9CB]">
+                          {appointment.paymentMethod}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="">
+                      <p className="font-bold">Date</p>
                       <p className="text-[13px] font-semibold text-[#62B9CB]">
-                        {item.type}
+                        {new Date(appointment.date).toLocaleDateString()}
                       </p>
                     </div>
+                    <div className="">
+                      <p className="font-bold">Time</p>
+                      <p className="text-[13px] font-semibold text-[#62B9CB]">
+                        {appointment.time}
+                      </p>
+                    </div>
+                    <div className="">
+                      <button
+                        className={`px-6 py-2 ${
+                          appointment.status === "pending"
+                            ? "bg-yellow-500"
+                            : appointment.status === "confirmed"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        } text-white text-[14px] font-semibold rounded-3xl`}
+                      >
+                        {appointment.status.charAt(0).toUpperCase() +
+                          appointment.status.slice(1)}
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="">
-                    <p className="font-bold">Price</p>
-                    <p className="text-[13px] font-semibold text-[#62B9CB]">
-                      ${item.price}
-                    </p>
-                  </div>
-                  <div className="">
-                    <p className="font-bold">Time</p>
-                    <p className="text-[13px] font-semibold text-[#62B9CB]">
-                      {item.timing}
-                    </p>
-                  </div>
-                  <div className="">
-                    <button className="px-6 py-2 bg-[#62B9CB] text-white text-[14px] font-semibold rounded-3xl">
-                      Pending
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
