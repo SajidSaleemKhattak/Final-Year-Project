@@ -19,6 +19,46 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Update lawyer profile
+router.patch("/:id", async (req, res) => {
+  try {
+    const {
+      name,
+      location,
+      phoneNumber,
+      languages,
+      experience,
+      rates,
+      about,
+      areasOfPractice,
+    } = req.body;
+
+    const updatedLawyer = await Lawyer.findByIdAndUpdate(
+      req.params.id,
+      {
+        name,
+        location,
+        phoneNumber,
+        languages,
+        experience,
+        rates,
+        about,
+        areasOfPractice,
+      },
+      { new: true }
+    ).select("-password");
+
+    if (!updatedLawyer) {
+      return res.status(404).json({ message: "Lawyer not found" });
+    }
+
+    res.json(updatedLawyer);
+  } catch (error) {
+    console.error("Error updating lawyer:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
 // Get all lawyers
 router.get("/", async (req, res) => {
   console.log("Fetching all lawyers");

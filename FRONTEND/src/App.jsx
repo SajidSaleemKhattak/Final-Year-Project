@@ -29,6 +29,8 @@ import AppointmentsActive from "./pages/client/Appointments";
 import Contact from "./pages/client/Contact";
 import LoginAs from "./pages/LoginAs";
 import LoginLawyer from "./pages/LoginLawyer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   return (
@@ -107,6 +109,7 @@ const App = () => {
         />
         <Route path="/Contact" element={<Contact />} />
       </Routes>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 };

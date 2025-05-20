@@ -4,7 +4,6 @@ import { FaCircleQuestion } from "react-icons/fa6";
 import { GoHome } from "react-icons/go";
 import { LuMessageCircleMore } from "react-icons/lu";
 import { SlCalender } from "react-icons/sl";
-import { CiDollar } from "react-icons/ci";
 import { CgProfile } from "react-icons/cg";
 import { MdGavel } from "react-icons/md"; // For Laws
 
@@ -44,15 +43,6 @@ const LSideBar = () => {
           <SlCalender size={20} />
         </div>
         <button className="ml-[2px]">Appointments</button>
-      </Link>
-      <Link
-        to="/lawyerearnings"
-        className={`flex gap-3 items-center border-1 border-neutral-200 pr-26 pl-5 py-2 rounded-xl w-4/5 ${
-          active === "/lawyerearnings" ? "bg-[#62B9CB] text-white" : ""
-        }`}
-      >
-        <CiDollar size={25} />
-        <button>Earnings</button>
       </Link>
       <Link
         to="/lawyerprofile"
