@@ -27,6 +27,46 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Get booking statistics for a lawyer
+router.get("/stats/:lawyerId", async (req, res) => {
+  try {
+    const { lawyerId } = req.params;
+
+    // Validate lawyerId
+    if (!mongoose.Types.ObjectId.isValid(lawyerId)) {
+      return res.status(400).json({ message: "Invalid lawyer ID" });
+    }
+
+    // Get today's date at midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get all bookings for this lawyer
+    const bookings = await Booking.find({ lawyerId });
+
+    // Calculate statistics
+    const stats = {
+      total: bookings.length,
+      completed: bookings.filter((booking) => booking.status === "confirmed")
+        .length,
+      pending: bookings.filter((booking) => booking.status === "pending")
+        .length,
+      cancelled: bookings.filter((booking) => booking.status === "cancelled")
+        .length,
+      today: bookings.filter((booking) => {
+        const bookingDate = new Date(booking.date);
+        bookingDate.setHours(0, 0, 0, 0);
+        return bookingDate.getTime() === today.getTime();
+      }).length,
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Error fetching booking statistics:", error);
+    res.status(500).json({ message: "Error fetching booking statistics" });
+  }
+});
+
 // Get all bookings
 router.get("/", async (req, res) => {
   try {

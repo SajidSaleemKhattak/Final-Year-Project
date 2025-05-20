@@ -19,7 +19,7 @@ const LSideBar = () => {
           active === "/lawyerdashboard" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <GoHome size={25} />
+        <GoHome size={24} className="min-w-[24px]" />
         <button>Dashboard</button>
       </Link>
       <Link
@@ -28,7 +28,7 @@ const LSideBar = () => {
           active === "/lawyermessages" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <LuMessageCircleMore size={25} />
+        <LuMessageCircleMore size={24} className="min-w-[24px]" />
         <button>Messages</button>
       </Link>
       <Link
@@ -39,10 +39,8 @@ const LSideBar = () => {
             : ""
         }`}
       >
-        <div className="ml-[2px]">
-          <SlCalender size={20} />
-        </div>
-        <button className="ml-[2px]">Appointments</button>
+        <SlCalender size={24} className="min-w-[24px]" />
+        <button>Appointments</button>
       </Link>
       <Link
         to="/lawyerprofile"
@@ -50,7 +48,7 @@ const LSideBar = () => {
           active === "/lawyerprofile" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <CgProfile size={25} />
+        <CgProfile size={24} className="min-w-[24px]" />
         <button>Profile</button>
       </Link>
       <Link
@@ -59,7 +57,7 @@ const LSideBar = () => {
           active === "/law" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <MdGavel size={24} />
+        <MdGavel size={24} className="min-w-[24px]" />
         <button>Laws</button>
       </Link>
 
@@ -71,7 +69,7 @@ const LSideBar = () => {
           Go To Help Center
         </button>
         <div className="absolute -top-5 text-[#62B9CB] bg-gray-100 border-0 rounded-3xl p-3">
-          <FaCircleQuestion />
+          <FaCircleQuestion size={24} />
         </div>
       </div>
 

@@ -20,7 +20,7 @@ const CLSidebar = () => {
           active === "/categories" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <GoHome size={25} />
+        <GoHome size={24} className="min-w-[24px]" />
         <button>Home</button>
       </Link>
 
@@ -31,7 +31,7 @@ const CLSidebar = () => {
           active === "/messages" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <LuMessageCircleMore size={25} />
+        <LuMessageCircleMore size={24} className="min-w-[24px]" />
         <button>Messages</button>
       </Link>
 
@@ -42,7 +42,7 @@ const CLSidebar = () => {
           active === "/appointments" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <SlCalender size={22} />
+        <SlCalender size={24} className="min-w-[24px]" />
         <button>Appointments</button>
       </Link>
 
@@ -53,7 +53,7 @@ const CLSidebar = () => {
           active === "/profile" ? "bg-[#62B9CB] text-white" : ""
         }`}
       >
-        <CgProfile size={25} />
+        <CgProfile size={24} className="min-w-[24px]" />
         <button>Profile</button>
       </Link>
 
@@ -66,7 +66,7 @@ const CLSidebar = () => {
           Go To Help Center
         </button>
         <div className="absolute -top-5 text-[#62B9CB] bg-gray-100 border-0 rounded-3xl p-3">
-          <FaCircleQuestion />
+          <FaCircleQuestion size={24} />
         </div>
       </div>
 
