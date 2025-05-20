@@ -544,42 +544,42 @@ const LawyerProfile = () => {
                     )}
                   </div>
 
-                  <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4 mt-4 relative">
-                    <p className="font-semibold text-xl mt-4 mb-6">Reviews</p>
-
-                    {reviews.length > 0 ? (
-                      reviews.map((review, index) => (
-                        <div key={index} className="mb-6">
-                          <div className="flex items-center gap-3">
-                            <FaUserAlt className="text-2xl text-[#62B9CB]" />
-                            <p className="font-semibold text-md">
-                              {review.userName}
-                            </p>
-                          </div>
-
-                          <div className="flex justify-start gap-2 items-center mt-2 mb-1">
-                            <div className="flex gap-1 text-yellow-500 text-sm">
-                              {[...Array(review.rating)].map((_, i) => (
-                                <FaStar key={i} />
-                              ))}
+                  {/* Reviews Section */}
+                  <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4 mt-4">
+                    <p className="font-semibold text-xl mt-4">Client Reviews</p>
+                    <div className="mt-4 space-y-4">
+                      {lawyer.reviews && lawyer.reviews.length > 0 ? (
+                        lawyer.reviews.map((review, index) => (
+                          <div
+                            key={index}
+                            className="border-b border-neutral-200 pb-4 last:border-b-0"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <img
+                                src={pfp}
+                                alt={review.userName}
+                                className="w-8 h-8 rounded-full"
+                              />
+                              <div>
+                                <p className="font-semibold">
+                                  {review.userName}
+                                </p>
+                                <p className="text-sm text-neutral-500">
+                                  {new Date(
+                                    review.createdAt
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
                             </div>
-                            <p className="text-sm text-neutral-400">
-                              {new Date(review.date).toLocaleDateString()}
-                            </p>
+                            <p className="text-neutral-600">{review.review}</p>
                           </div>
-
-                          <p className="text-neutral-600 text-sm">
-                            {review.message}
-                          </p>
-
-                          {index < reviews.length - 1 && (
-                            <hr className="mt-4 border-neutral-300" />
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-neutral-600">No reviews yet</p>
-                    )}
+                        ))
+                      ) : (
+                        <p className="text-neutral-500 italic">
+                          No reviews yet
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

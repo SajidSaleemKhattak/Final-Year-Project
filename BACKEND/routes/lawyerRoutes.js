@@ -57,7 +57,12 @@ router.get("/dashboard/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   console.log("Fetching lawyer with ID:", req.params.id);
   try {
-    const lawyer = await Lawyer.findById(req.params.id).select("-password");
+    const lawyer = await Lawyer.findById(req.params.id)
+      .select("-password")
+      .populate({
+        path: "reviews",
+        options: { sort: { createdAt: -1 } },
+      });
     console.log("Found lawyer:", lawyer);
     if (!lawyer) {
       console.log("No lawyer found with ID:", req.params.id);

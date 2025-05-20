@@ -19,6 +19,16 @@ const Law = () => {
       setshowNotification((toggle) => !toggle);
     }
   };
+
+  // URLs for different provincial law websites
+  const lawUrls = {
+    federal: "https://na.gov.pk/en/",
+    punjab: "https://punjablaws.gov.pk/",
+    sindh: "https://sindhlaws.gov.pk/",
+    balochistan: "https://balochistan.gov.pk/",
+    kpk: "https://kp.gov.pk/",
+  };
+
   return (
     <>
       <div className="">
@@ -116,12 +126,16 @@ const Law = () => {
                 date.
               </div>
               <div>
-                <button className="px-5 rounded-lg py-1  text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer">
+                <a
+                  href={lawUrls.federal}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 rounded-lg py-1 text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer hover:bg-[#62B9CB] hover:text-white transition-colors duration-300 inline-block"
+                >
                   Search
-                </button>
+                </a>
               </div>
             </div>
-            {/* End of 1 item of Grid */}
             <div
               className="border-1 border-gray-200
           rounded-lg px-4 py-4 flex flex-col gap-2"
@@ -132,9 +146,14 @@ const Law = () => {
                 date.
               </div>
               <div>
-                <button className="px-5 rounded-lg py-1  text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer">
+                <a
+                  href={lawUrls.punjab}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 rounded-lg py-1 text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer hover:bg-[#62B9CB] hover:text-white transition-colors duration-300 inline-block"
+                >
                   Search
-                </button>
+                </a>
               </div>
             </div>
             <div
@@ -147,9 +166,14 @@ const Law = () => {
                 date.
               </div>
               <div>
-                <button className="px-5 rounded-lg py-1  text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer">
+                <a
+                  href={lawUrls.balochistan}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 rounded-lg py-1 text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer hover:bg-[#62B9CB] hover:text-white transition-colors duration-300 inline-block"
+                >
                   Search
-                </button>
+                </a>
               </div>
             </div>
             <div
@@ -162,9 +186,14 @@ const Law = () => {
                 date.
               </div>
               <div>
-                <button className="px-5 rounded-lg py-1  text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer">
+                <a
+                  href={lawUrls.sindh}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 rounded-lg py-1 text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer hover:bg-[#62B9CB] hover:text-white transition-colors duration-300 inline-block"
+                >
                   Search
-                </button>
+                </a>
               </div>
             </div>
             <div
@@ -177,9 +206,14 @@ const Law = () => {
                 date.
               </div>
               <div>
-                <button className="px-5 rounded-lg py-1  text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer">
+                <a
+                  href={lawUrls.kpk}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 rounded-lg py-1 text-[#62B9CB] border-1 border-[#62B9CB] cursor-pointer hover:bg-[#62B9CB] hover:text-white transition-colors duration-300 inline-block"
+                >
                   Search
-                </button>
+                </a>
               </div>
             </div>
           </div>

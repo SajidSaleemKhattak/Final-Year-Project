@@ -8,11 +8,14 @@ import Sidebar from "../../pages/client/components/C-LSidebar";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Appointments = () => {
   let [showNotification, setshowNotification] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState({});
   const user = JSON.parse(localStorage.getItem("user"));
 
   // Configure axios defaults
@@ -63,6 +66,41 @@ const Appointments = () => {
       console.error("Error fetching appointments:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReviewChange = (appointmentId, review) => {
+    setReviews((prev) => ({
+      ...prev,
+      [appointmentId]: review,
+    }));
+  };
+
+  const handleSubmitReview = async (appointmentId, lawyerId) => {
+    try {
+      const review = reviews[appointmentId];
+      if (!review) {
+        toast.error("Please write a review before submitting");
+        return;
+      }
+
+      await api.post("/api/reviews", {
+        appointmentId,
+        lawyerId,
+        userId: user._id,
+        userName: user.name,
+        review,
+      });
+
+      toast.success("Review submitted successfully!");
+      setReviews((prev) => {
+        const newReviews = { ...prev };
+        delete newReviews[appointmentId];
+        return newReviews;
+      });
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error("Failed to submit review. Please try again.");
     }
   };
 
@@ -166,48 +204,81 @@ const Appointments = () => {
                 appointments.map((appointment) => (
                   <div
                     key={appointment._id}
-                    className="flex justify-around bg-blue-50 border border-neutral-200 rounded-2xl px-5 py-7 items-center"
+                    className="flex flex-col bg-blue-50 border border-neutral-200 rounded-2xl px-5 py-7"
                   >
-                    <div className="flex justify-center items-center gap-4">
-                      <img
-                        src={pfp}
-                        className="w-12 h-12 rounded-full"
-                        alt="Lawyer Pfp"
-                      />
-                      <div>
-                        <p className="font-bold">{appointment.lawyerName}</p>
+                    <div className="flex justify-around items-center">
+                      <div className="flex justify-center items-center gap-4">
+                        <img
+                          src={pfp}
+                          className="w-12 h-12 rounded-full"
+                          alt="Lawyer Pfp"
+                        />
+                        <div>
+                          <p className="font-bold">{appointment.lawyerName}</p>
+                          <p className="text-[13px] font-semibold text-[#62B9CB]">
+                            {appointment.paymentMethod}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="">
+                        <p className="font-bold">Date</p>
                         <p className="text-[13px] font-semibold text-[#62B9CB]">
-                          {appointment.paymentMethod}
+                          {new Date(appointment.date).toLocaleDateString()}
                         </p>
+                      </div>
+                      <div className="">
+                        <p className="font-bold">Time</p>
+                        <p className="text-[13px] font-semibold text-[#62B9CB]">
+                          {appointment.time}
+                        </p>
+                      </div>
+                      <div className="">
+                        <button
+                          className={`px-6 py-2 ${
+                            appointment.status === "pending"
+                              ? "bg-yellow-500"
+                              : appointment.status === "confirmed"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          } text-white text-[14px] font-semibold rounded-3xl`}
+                        >
+                          {appointment.status.charAt(0).toUpperCase() +
+                            appointment.status.slice(1)}
+                        </button>
                       </div>
                     </div>
 
-                    <div className="">
-                      <p className="font-bold">Date</p>
-                      <p className="text-[13px] font-semibold text-[#62B9CB]">
-                        {new Date(appointment.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="">
-                      <p className="font-bold">Time</p>
-                      <p className="text-[13px] font-semibold text-[#62B9CB]">
-                        {appointment.time}
-                      </p>
-                    </div>
-                    <div className="">
-                      <button
-                        className={`px-6 py-2 ${
-                          appointment.status === "pending"
-                            ? "bg-yellow-500"
-                            : appointment.status === "confirmed"
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                        } text-white text-[14px] font-semibold rounded-3xl`}
-                      >
-                        {appointment.status.charAt(0).toUpperCase() +
-                          appointment.status.slice(1)}
-                      </button>
-                    </div>
+                    {/* Review Section for Completed Appointments */}
+                    {appointment.status === "completed" && (
+                      <div className="mt-4 border-t border-neutral-200 pt-4">
+                        <div className="flex flex-col gap-2">
+                          <textarea
+                            className="w-full p-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62B9CB]"
+                            placeholder="Write your review about the lawyer..."
+                            rows="3"
+                            value={reviews[appointment._id] || ""}
+                            onChange={(e) =>
+                              handleReviewChange(
+                                appointment._id,
+                                e.target.value
+                              )
+                            }
+                          />
+                          <button
+                            onClick={() =>
+                              handleSubmitReview(
+                                appointment._id,
+                                appointment.lawyerId
+                              )
+                            }
+                            className="self-end bg-[#62B9CB] text-white px-4 py-2 rounded-lg hover:bg-[#4a9ba8] transition-colors"
+                          >
+                            Submit Review
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))
               )}

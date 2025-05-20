@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../../assets/home/logo.png";
 import gear from "../../assets/Client/Gear.png";
 import Vector from "../../assets/Client/Vector.png";
@@ -11,11 +11,28 @@ import io from "socket.io-client";
 const Lawyer_Check = () => {
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Guest" };
   const location = useLocation();
-  const { lawyer } = location.state || {};
-  console.log("Received lawyer data:", lawyer);
+  const { lawyer: initialLawyer } = location.state || {};
+  const [lawyer, setLawyer] = useState(initialLawyer);
   const [showChat, setShowChat] = useState(false);
   const socket = io("http://localhost:5000");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchLawyerDetails = async () => {
+      if (initialLawyer?._id) {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/lawyers/${initialLawyer._id}`
+          );
+          setLawyer(response.data);
+        } catch (error) {
+          console.error("Error fetching lawyer details:", error);
+        }
+      }
+    };
+
+    fetchLawyerDetails();
+  }, [initialLawyer]);
 
   const handleBookNow = async (lawyerId, userName, userEmail) => {
     try {
@@ -109,15 +126,6 @@ const Lawyer_Check = () => {
             <button>Appointments</button>
           </Link>
           <Link
-            to="/transaction"
-            className={`flex gap-3 items-center border-1  border-neutral-200  pr-26 pl-5 py-2 rounded-xl w-4/5 ${
-              active === "transaction" ? "bg-blue-400 text-white" : ""
-            }`}
-          >
-            <img src={gear} className="w-5 h-5" alt="" />
-            <button>Transactions</button>
-          </Link>
-          <Link
             to="/profile"
             className={`flex gap-3 items-center border-1 border-neutral-200 pr-26 pl-5 py-2 rounded-xl w-4/5 ${
               active === "profile" ? "bg-blue-400 text-white" : ""
@@ -126,14 +134,17 @@ const Lawyer_Check = () => {
             <img src={gear} className="w-5 h-5" alt="" />
             <button>Profile</button>
           </Link>
-          <div className="flex flex-col justify-center items-center bg-amber-400 w-4/5 rounded-2xl px-6 py-6 text-white mt-14">
+          <Link
+            to="/contact"
+            className="flex flex-col justify-center items-center bg-amber-400 w-4/5 rounded-2xl px-6 py-6 text-white mt-14"
+          >
             <p className="font-semibold">Help Center</p>
             <p className="mt-2 text-[13px]">Contact us for More </p>
             <p className="text-[13px]">Questions</p>
             <button className="bg-white text-blue-400 px-2 py-2 rounded-xl mt-2 font-semibold w-full text-[13px] cursor-alias">
               Go To Help Center
             </button>
-          </div>
+          </Link>
           <button className=" bg-blue-400 text-white w-4/5  px-2 py-2 rounded-xl mt-8 cursor-pointer">
             Logout
           </button>
@@ -152,7 +163,7 @@ const Lawyer_Check = () => {
                   {lawyer?.email || "Email Not Available"}
                 </p>
                 <p className="text-blue-300 text-[13px]">
-                  {lawyer?.phone || "Phone Not Available"}
+                  {lawyer?.phoneNumber || "Phone Not Available"}
                 </p>
                 <p className="text-blue-300 text-[13px]">
                   {lawyer?.location || "Location Not Available"}
@@ -185,74 +196,62 @@ const Lawyer_Check = () => {
               <hr className="text-neutral-300 border-1 mt-4" />
               <p className="font-semibold text-xl mt-4">About</p>
               <p className="text-neutral-600">
-                {lawyer?.bio || "No description available for this lawyer."}
+                {lawyer?.about ||
+                  lawyer?.bio ||
+                  "No description available for this lawyer."}
               </p>
             </div>
             <div className="flex flex-col w-fit border-1 border-neutral-200 rounded-2xl px-4 py-4">
-              <div>
-                <p className="text-xl font-semibold">Biography</p>
-                <p className="text-[16px] text-neutral-500">
-                  {lawyer?.biography || "No biography available."}
-                </p>
-              </div>
-              <div>
-                <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4 mt-4">
-                  <p className="text-xl font-semibold">Reviews</p>
-                  {lawyer?.reviews ? (
-                    lawyer.reviews.map((review, index) => (
-                      <div
-                        className="flex flex-col px-3 py-2 gap-1"
-                        key={index}
-                      >
-                        <div className="flex gap-3 items-center">
-                          <img
-                            className="w-12 h-12 rounded-[500px]"
-                            src={review.img || pfp}
-                            alt="Reviewer's profile"
-                          />
-                          <p className="font-semibold">{review.name}</p>
-                        </div>
-                        <div className="flex gap-3 items-center">
-                          <p className="text-[13px] font-semibold text-blue-300">
-                            Rating: {review.rating}
-                          </p>
-                          <p className="text-[13px] text-neutral-500">
-                            {review.date}
-                          </p>
-                        </div>
-                        <p className="text-[13px] text-neutral-500">
-                          {review.message}
-                        </p>
-                        <hr className="mt-1 border-neutral-200" />
+              <div className="border-1 border-neutral-200 rounded-2xl px-4 py-4">
+                <p className="text-xl font-semibold">Reviews</p>
+                {lawyer?.reviews && lawyer.reviews.length > 0 ? (
+                  lawyer.reviews.map((review, index) => (
+                    <div className="flex flex-col px-3 py-2 gap-1" key={index}>
+                      <div className="flex gap-3 items-center">
+                        <img
+                          className="w-12 h-12 rounded-[500px]"
+                          src={pfp}
+                          alt="Reviewer's profile"
+                        />
+                        <p className="font-semibold">{review.userName}</p>
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-neutral-500 text-center py-4">
-                      No reviews available yet.
-                    </p>
-                  )}
-                </div>
-                <div className="flex justify-end gap-5 mt-5">
-                  <Link to="/categories">
-                    <button className="px-16 py-2 border-1 rounded-3xl">
-                      Back
-                    </button>
-                  </Link>
-                  <button
-                    onClick={toggleChat}
-                    className="bg-blue-400 text-white px-8 py-2 rounded-xl hover:bg-blue-500 transition-colors"
-                  >
-                    Chat
+                      <div className="flex gap-3 items-center">
+                        <p className="text-[13px] text-neutral-500">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <p className="text-[13px] text-neutral-500">
+                        {review.review}
+                      </p>
+                      <hr className="mt-1 border-neutral-200" />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-neutral-500 text-center py-4">
+                    No reviews available yet.
+                  </p>
+                )}
+              </div>
+              <div className="flex justify-end gap-5 mt-5">
+                <Link to="/categories">
+                  <button className="px-16 py-2 border-1 rounded-3xl">
+                    Back
                   </button>
-                  <button
-                    onClick={() =>
-                      navigate("/book-appointment", { state: { lawyer, user } })
-                    }
-                    className="bg-[#62B9CB] text-white px-8 py-2 rounded-xl"
-                  >
-                    Book Now
-                  </button>
-                </div>
+                </Link>
+                <button
+                  onClick={toggleChat}
+                  className="bg-blue-400 text-white px-8 py-2 rounded-xl hover:bg-blue-500 transition-colors"
+                >
+                  Chat
+                </button>
+                <button
+                  onClick={() =>
+                    navigate("/book-appointment", { state: { lawyer, user } })
+                  }
+                  className="bg-[#62B9CB] text-white px-8 py-2 rounded-xl"
+                >
+                  Book Now
+                </button>
               </div>
             </div>
           </div>

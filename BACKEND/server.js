@@ -5,6 +5,7 @@ const authRoutes = require("./routes/authRouter");
 const lawyerRoutes = require("./routes/lawyerRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
 const emailRoutes = require("./routes/emailRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const dotenv = require("dotenv");
 const socketIo = require("socket.io");
 const http = require("http");
@@ -61,6 +62,7 @@ app.use("/api/lawyers", lawyerRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api", emailRoutes);
 app.use("/api", paymentRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Chat routes
 const chatRoutes = require("./routes/chatRoutes");
