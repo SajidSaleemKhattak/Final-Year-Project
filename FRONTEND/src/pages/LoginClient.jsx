@@ -1,8 +1,5 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaFacebookF } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { FaXTwitter } from "react-icons/fa6";
 import axios from "axios";
 import logo from "../assets/home/logo.png";
 import tarazoImg from "../assets/login/tarazo.png";
@@ -87,20 +84,8 @@ const LoginClient = () => {
             Login
           </button>
 
-          <div className="flex items-center justify-center w-[60%] gap-4 my-2">
-            <hr className="flex-grow border-gray-300" />
-            <span className="text-sm text-gray-500">or login with</span>
-            <hr className="flex-grow border-gray-300" />
-          </div>
-
-          <div className="flex gap-6 text-2xl">
-            <FaFacebookF className="text-blue-500 hover:scale-110 transition cursor-pointer" />
-            <FcGoogle className="hover:scale-110 transition cursor-pointer" />
-            <FaXTwitter className="text-black hover:scale-110 transition cursor-pointer" />
-          </div>
-
           <p className="text-sm mt-6">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link to="/signup" className="text-[#62B9CB] font-medium ml-1">
               Signup
             </Link>

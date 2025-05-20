@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../../assets/home/logo.png";
 import tarazoImg from "../../../assets/login/tarazo.png";
-import { FaFacebookF, FaTwitter } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
 import axios from "axios";
 
@@ -231,18 +229,6 @@ const Lawyer_Signup = () => {
             Signup
           </button>
         </form>
-
-        <div className="flex items-center gap-3 w-full max-w-md mt-4 mx-auto">
-          <hr className="flex-grow border-gray-300" />
-          <p className="text-sm text-gray-600">Or Login With</p>
-          <hr className="flex-grow border-gray-300" />
-        </div>
-
-        <div className="flex justify-center gap-6 text-xl mt-2">
-          <FaFacebookF className="text-blue-600 cursor-pointer hover:scale-110 transition" />
-          <FcGoogle className="cursor-pointer hover:scale-110 transition" />
-          <FaTwitter className="text-sky-400 cursor-pointer hover:scale-110 transition" />
-        </div>
 
         <p className="mt-4 text-sm text-gray-600 text-center">
           Already have an account?

@@ -104,14 +104,23 @@ const LawyerProfile = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const response = await api.patch(
-        `/api/lawyers/${lawyer._id}`,
-        editedLawyer
-      );
-      setLawyer(response.data);
-      localStorage.setItem("lawyer", JSON.stringify(response.data));
-      setIsEditing(false);
-      toast.success("Profile updated successfully");
+      const response = await api.patch(`/api/lawyers/${lawyer._id}`, {
+        ...editedLawyer,
+        languages: editedLawyer.languages || [],
+        areasOfPractice: areasOfPractice,
+        about: editedLawyer.about || "",
+        experience: editedLawyer.experience || "",
+        rates: editedLawyer.rates || "",
+      });
+
+      if (response.data) {
+        setLawyer(response.data);
+        localStorage.setItem("lawyer", JSON.stringify(response.data));
+        setIsEditing(false);
+        toast.success("Profile updated successfully");
+      } else {
+        throw new Error("No data received from server");
+      }
     } catch (err) {
       console.error("Error updating lawyer data:", err);
       setError("Failed to update profile. Please try again later.");
@@ -135,6 +144,19 @@ const LawyerProfile = () => {
       setEditedLawyer((prev) => ({
         ...prev,
         languages: languageArray,
+      }));
+    } else if (name === "experience") {
+      // Ensure experience is a number
+      const experienceValue = value.replace(/[^0-9]/g, "");
+      setEditedLawyer((prev) => ({
+        ...prev,
+        experience: experienceValue,
+      }));
+    } else if (name === "rates") {
+      // Allow numbers and currency symbols
+      setEditedLawyer((prev) => ({
+        ...prev,
+        rates: value,
       }));
     } else {
       setEditedLawyer((prev) => ({
@@ -225,61 +247,13 @@ const LawyerProfile = () => {
           <img src={logo} alt="" className="w-[219px] h-[57px]" />
 
           <div className="flex justify-between relative gap-4 items-center">
-            <img
-              src={Vector}
-              onClick={handleNotification}
-              className="w-5 h-5 hover:scale-120 duration-150 cursor-pointer active:scale-110"
-              alt=""
-            />
-            {showNotification && (
-              <div className="absolute top-12 flex border-[#62B9CB] -left-3 justify-between gap-6 font-semibold z-50 border-2 rounded-xl py-4 pb-7 w-70 flex-col items-center bg-white text-[#62B9CB] shadow-lg">
-                <div className="flex justify-between px-6 bg-[#62B9CB] w-full py-4 -mt-[17px] border-0 rounded-t-xl">
-                  <div className="text-xl text-white">Notifications</div>
-                  <div className="text-white">
-                    <IoMdNotificationsOutline size={30} />
-                  </div>
-                </div>
-
-                <div className="flex gap-4 justify-between items-center w-full px-6 hover:bg-gray-50 transition-colors">
-                  <div>
-                    <Link to="/lawyerappointments/request">
-                      <div className="text-lg underline underline-offset-6 hover:text-[black]">
-                        Appointment Requests
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="text-lg border-0 rounded-full bg-[#62B9CB] px-3 text-white">
-                    {notifications.appointments}
-                  </div>
-                </div>
-                <div className="flex gap-4 justify-between items-center w-full px-6 hover:bg-gray-50 transition-colors">
-                  <div>
-                    <Link to="/lawyermessages">
-                      <div className="text-lg underline underline-offset-6 hover:text-[#62B9CB]">
-                        New Messages
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="text-lg border-0 rounded-full bg-[#62B9CB] px-3 text-white">
-                    {notifications.messages}
-                  </div>
-                </div>
-                <div className="flex gap-4 justify-between items-center w-full px-6 hover:bg-gray-50 transition-colors">
-                  <div>
-                    <Link to="/lawyerappointments/active">
-                      <div className="text-lg underline underline-offset-6 hover:text-[#62B9CB]">
-                        Appointment Pendings
-                      </div>
-                    </Link>
-                  </div>
-                  <div className="text-lg border-0 rounded-full bg-[#62B9CB] px-3 text-white">
-                    {notifications.pending}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <img src={gear} className="w-5 h-5" alt="" />
+            <Link to="/lawyersettings">
+              <img
+                src={gear}
+                className="w-5 h-5 hover:scale-110 transition-transform cursor-pointer"
+                alt="Settings"
+              />
+            </Link>
             <div className="flex justify-between gap-1.5">
               <img
                 src={lawyer.profilePicture || pfp}
@@ -309,25 +283,28 @@ const LawyerProfile = () => {
                       type="text"
                       name="name"
                       value={editedLawyer.name || ""}
-                      onChange={handleInputChange}
-                      className="font-semibold text-xl text-center border rounded p-1 focus:outline-none focus:ring-2 focus:ring-[#62B9CB]"
+                      disabled
+                      className="font-semibold text-xl text-center border rounded p-1 focus:outline-none focus:ring-2 focus:ring-[#62B9CB] bg-gray-50"
                     />
                   ) : (
                     <p className="font-semibold text-xl">{lawyer.name}</p>
                   )}
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="specialization"
-                      value={editedLawyer.specialization || ""}
-                      onChange={handleInputChange}
-                      className="text-[#62B9CB] text-[13px] text-center border rounded p-1 focus:outline-none focus:ring-2 focus:ring-[#62B9CB]"
-                    />
-                  ) : (
-                    <p className="text-[#62B9CB] text-[13px]">
-                      {lawyer.specialization || "Civil Pro, Criminal"}
-                    </p>
-                  )}
+                  <div className="flex flex-wrap gap-2 justify-center mt-1">
+                    {areasOfPractice.length > 0 ? (
+                      areasOfPractice.map((area, index) => (
+                        <div
+                          key={index}
+                          className="bg-[#62B9CB] text-white px-3 py-1 rounded-full text-sm"
+                        >
+                          {area}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-neutral-600 text-sm">
+                        No practice areas specified
+                      </p>
+                    )}
+                  </div>
                   <div className="flex gap-1 text-[#62B9CB] text-[13px] mt-1">
                     {[...Array(5)].map((_, index) => (
                       <FaStar key={index} />
@@ -355,7 +332,7 @@ const LawyerProfile = () => {
                   ) : (
                     <button
                       onClick={handleEdit}
-                      className="flex items-center bg-[#62B9CB] text-white py-2 px-14 border-0 rounded-lg mt-4 hover:bg-[#4a9ba8] transition-colors"
+                      className="flex items-center bg-teal-500 text-white py-2 px-14 border-0 rounded-lg mt-4 hover:bg-teal-600 transition-colors transform hover:scale-105 duration-200"
                     >
                       Edit Profile
                     </button>
@@ -419,6 +396,7 @@ const LawyerProfile = () => {
                         name="experience"
                         value={editedLawyer.experience || ""}
                         onChange={handleInputChange}
+                        placeholder="Enter years of experience"
                         className="border rounded p-1 focus:outline-none focus:ring-2 focus:ring-[#62B9CB]"
                       />
                     ) : (
@@ -434,6 +412,7 @@ const LawyerProfile = () => {
                         name="rates"
                         value={editedLawyer.rates || ""}
                         onChange={handleInputChange}
+                        placeholder="Enter your rates"
                         className="border rounded p-1 focus:outline-none focus:ring-2 focus:ring-[#62B9CB]"
                       />
                     ) : (

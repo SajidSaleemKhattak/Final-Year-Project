@@ -62,9 +62,11 @@ const CLSidebar = () => {
         <p className="font-semibold">Help Center</p>
         <p className="mt-2 text-[13px]">Contact us for More </p>
         <p className="text-[13px]">Questions</p>
-        <button className="bg-white text-[#62B9CB] px-2 py-2 rounded-xl mt-2 font-semibold w-full text-[13px] cursor-alias">
-          Go To Help Center
-        </button>
+        <Link to="/contact">
+          <button className="bg-white text-[#62B9CB] px-2 py-2 rounded-xl mt-2 font-semibold w-full text-[13px] cursor-alias">
+            Go To Help Center
+          </button>
+        </Link>
         <div className="absolute -top-5 text-[#62B9CB] bg-gray-100 border-0 rounded-3xl p-3">
           <FaCircleQuestion size={24} />
         </div>

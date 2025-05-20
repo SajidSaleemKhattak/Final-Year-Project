@@ -16,6 +16,7 @@ const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState({});
+  const [submittedReviews, setSubmittedReviews] = useState({});
   const user = JSON.parse(localStorage.getItem("user"));
 
   // Configure axios defaults
@@ -91,6 +92,12 @@ const Appointments = () => {
         userName: user.name,
         review,
       });
+
+      // Store the submitted review
+      setSubmittedReviews((prev) => ({
+        ...prev,
+        [appointmentId]: review,
+      }));
 
       toast.success("Review submitted successfully!");
       setReviews((prev) => {
@@ -257,25 +264,32 @@ const Appointments = () => {
                             className="w-full p-2 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#62B9CB]"
                             placeholder="Write your review about the lawyer..."
                             rows="3"
-                            value={reviews[appointment._id] || ""}
+                            value={
+                              submittedReviews[appointment._id] ||
+                              reviews[appointment._id] ||
+                              ""
+                            }
                             onChange={(e) =>
                               handleReviewChange(
                                 appointment._id,
                                 e.target.value
                               )
                             }
+                            disabled={!!submittedReviews[appointment._id]}
                           />
-                          <button
-                            onClick={() =>
-                              handleSubmitReview(
-                                appointment._id,
-                                appointment.lawyerId
-                              )
-                            }
-                            className="self-end bg-[#62B9CB] text-white px-4 py-2 rounded-lg hover:bg-[#4a9ba8] transition-colors"
-                          >
-                            Submit Review
-                          </button>
+                          {!submittedReviews[appointment._id] && (
+                            <button
+                              onClick={() =>
+                                handleSubmitReview(
+                                  appointment._id,
+                                  appointment.lawyerId
+                                )
+                              }
+                              className="self-end bg-[#62B9CB] text-white px-4 py-2 rounded-lg hover:bg-[#4a9ba8] transition-colors"
+                            >
+                              Submit Review
+                            </button>
+                          )}
                         </div>
                       </div>
                     )}

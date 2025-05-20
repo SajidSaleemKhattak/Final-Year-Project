@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const Lawyer = require("../models/Lawyer");
 const Booking = require("../models/Booking");
+const Review = require("../models/Review");
+const Chat = require("../models/Chat");
 
 // Get all lawyers
 router.get("/", async (req, res) => {
@@ -44,7 +46,7 @@ router.get("/dashboard/:id", async (req, res) => {
     };
 
     res.json({
-      bio: lawyer.biography || lawyer.about || "",
+      bio: lawyer.bio || "",
       stats,
     });
   } catch (error) {
@@ -111,6 +113,35 @@ router.patch("/:id", async (req, res) => {
     res.json(updatedLawyer);
   } catch (error) {
     console.error("Error updating lawyer:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+// Delete lawyer account
+router.delete("/:id", async (req, res) => {
+  try {
+    const lawyer = await Lawyer.findById(req.params.id);
+    if (!lawyer) {
+      return res.status(404).json({ message: "Lawyer not found" });
+    }
+
+    // Delete all associated data
+    await Promise.all([
+      // Delete all bookings
+      Booking.deleteMany({ lawyerId: req.params.id }),
+      // Delete all reviews
+      Review.deleteMany({ lawyerId: req.params.id }),
+      // Delete all chats
+      Chat.deleteMany({ participants: req.params.id }),
+      // Delete the lawyer
+      Lawyer.findByIdAndDelete(req.params.id),
+    ]);
+
+    res.json({
+      message: "Lawyer account and associated data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting lawyer:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });

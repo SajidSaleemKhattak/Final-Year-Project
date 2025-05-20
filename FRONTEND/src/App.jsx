@@ -29,6 +29,7 @@ import AppointmentsActive from "./pages/client/Appointments";
 import Contact from "./pages/client/Contact";
 import LoginAs from "./pages/LoginAs";
 import LoginLawyer from "./pages/LoginLawyer";
+import Settings from "./pages/lawyer/Settings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -107,6 +108,7 @@ const App = () => {
           path="/lawyerappointments/completed"
           element={<LawyerAppointmentsCompleted />}
         />
+        <Route path="/lawyersettings" element={<Settings />} />
         <Route path="/Contact" element={<Contact />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} />
